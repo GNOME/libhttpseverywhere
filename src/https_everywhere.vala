@@ -1,13 +1,13 @@
 namespace HTTPSEverywhere {
     private bool initialized = false;
-    private Gee.HashMap<string, Ruleset> rulesets;
+    private Gee.HashMap<Target, Ruleset> rulesets;
 
     /**
      * This function initializes HTTPSEverywhere by loading
      * the rulesets from the filesystem.
      */
     public void init() {
-        rulesets = new Gee.HashMap<string, Ruleset>();
+        rulesets = new Gee.HashMap<Target, Ruleset>();
         load_rulesets();
         initialized = true;
     }
@@ -16,12 +16,22 @@ namespace HTTPSEverywhere {
      * Takes an @url and returns the appropriate
      * HTTPS-enabled counterpart if there is any
      */
-    public string httpsify(string url) {
+    public string rewrite(string url) {
         if (!initialized){
             critical("HTTPSEverywhere was not initialized");
             return url;
         }
-        return "";
+        Ruleset? rs = null;
+        foreach (Target target in rulesets.keys) {
+            if (target.matches(url)) {
+                rs = rulesets.get(target);
+                break;
+            }
+        }
+        if (rs == null)
+            return url;
+        else 
+            return rs.rewrite(url);
     }
 
     /**
@@ -85,8 +95,8 @@ namespace HTTPSEverywhere {
         if (root != null) {
             try {
                 var rs = new Ruleset.from_xml(root);
-                foreach (string host in rs.targets)
-                    rulesets.set(host,rs);
+                foreach (Target target in rs.targets)
+                    rulesets.set(target, rs);
             } catch (RulesetError e) {
             }
         } else {

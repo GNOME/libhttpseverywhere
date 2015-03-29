@@ -10,8 +10,8 @@ namespace HTTPSEverywhere {
 
         private Gee.ArrayList<Rule> rules;
         private Gee.ArrayList<string> exclusions;
-        private Gee.ArrayList<string> _targets;
-        public Gee.ArrayList<string> targets {
+        private Gee.ArrayList<Target> _targets;
+        public Gee.ArrayList<Target> targets {
             get {
                 return this._targets;
             }
@@ -21,7 +21,7 @@ namespace HTTPSEverywhere {
         public Ruleset() {
             this.rules = new Gee.ArrayList<Rule>();
             this.exclusions = new Gee.ArrayList<string>();
-            this._targets = new Gee.ArrayList<string>();
+            this._targets = new Gee.ArrayList<Target>();
         }
 
         public Ruleset.from_xml(Xml.Node* root) throws RulesetError {
@@ -89,7 +89,15 @@ namespace HTTPSEverywhere {
         }
 
         public void add_target(string host) {
-            this.targets.add(host);
+            this._targets.add(new Target(host));
+        }
+
+        public string rewrite(string url) {
+            string u = url;
+            foreach (Rule rule in this.rules) {
+                u = rule.rewrite(u);
+            }
+            return u;
         }
     }
 
@@ -112,6 +120,18 @@ namespace HTTPSEverywhere {
                 return ret;
             } else
                 return url;
+        }
+    }
+
+    public class Target : GLib.Object {
+        public string host {get;set;default="";}
+        private Regex wildcardcheck;
+
+        public Target(string host) {
+            
+        }
+        public bool matches(string url) {
+            return false;
         }
     }
 }
