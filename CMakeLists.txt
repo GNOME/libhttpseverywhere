@@ -42,8 +42,9 @@ if (GEE10)
         gee-1.0
     OPTIONS
         --thread
+        --target-glib 2.32
         --library=httpseverywhere
-        -H httpseverywhere.h
+        -H include/httpseverywhere.h
     )
 else()
     vala_precompile(VALA_LIB_C
@@ -55,12 +56,20 @@ else()
         gee-0.8
     OPTIONS
         --thread
+        --target-glib 2.32
         --library=httpseverywhere
-        -H httpseverywhere.h
+        -H include/httpseverywhere.h
     )
 endif()
 
-add_definitions(-fstack-protector-all -D_FORTIFY_SOURCE=2)
+add_definitions(-fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIC)
+add_definitions(-w)
 
 add_library("httpseverywhere" SHARED ${VALA_LIB_C})  
-    
+
+install(DIRECTORY "https-everywhere/src/chrome/content/rules" DESTINATION share/${PROJECT_NAME})
+install(FILES "include/httpseverywhere.h" DESTINATION include )
+install(TARGETS "httpseverywhere"
+    LIBRARY DESTINATION lib
+)
+
