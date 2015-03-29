@@ -1,0 +1,6 @@
+.*.sw*
+https-everywhere/*
+CMakeCache.txt
+CMakeFiles/
+cmake_install.txt
+Makefile
