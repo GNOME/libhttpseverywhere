@@ -1,17 +1,19 @@
 namespace HTTPSEverywhere {
     private bool initialized = false;
+    private Gee.HashMap<string, Ruleset> rulesets;
 
     /**
      * This function initializes HTTPSEverywhere by loading
      * the rulesets from the filesystem.
      */
     public void init() {
+        rulesets = new Gee.HashMap<string, Ruleset>();
+        load_rulesets();
         initialized = true;
-        parse_rulesets();
     }
 
     /**
-     * Takes an URL and returns the appropriate
+     * Takes an @url and returns the appropriate
      * HTTPS-enabled counterpart if there is any
      */
     public string httpsify(string url) {
@@ -35,19 +37,70 @@ namespace HTTPSEverywhere {
     }
 
     /**
-     * Parses all rulesets that can be found in the system
+     * Locates all rulesets that can be found in the system
+     * And causes them to be parsed into ram.
      */
-    private void parse_rulesets() { 
+    private void load_rulesets() {
+        var rulepaths = new Gee.HashMap<string, string>();
+        var datapaths = new Gee.ArrayList<string>();
+
+        // Specify the paths to search for rules in 
+        foreach (string dp in Environment.get_system_data_dirs())
+            datapaths.add(dp);
+        datapaths.add(Environment.get_user_data_dir());
+
+        // Collects rules throughout the system
+        foreach (string dir in datapaths) {
+            string ruledirpath = Path.build_filename(dir, "libhttpseverywhere", "rules");
+            Dir ruledir;
+            try {
+                ruledir = Dir.open (ruledirpath);
+            } catch (FileError e) {
+                continue;
+            }
+            string? rule = null;
+            while ((rule = ruledir.read_name()) != null) {
+                rulepaths.set(rule, Path.build_filename(ruledirpath, rule));
+            }
+        }
+
+        // Cause each rule to be parsed and loaded
+        foreach (string rulepath in rulepaths.values) {
+            parse_ruleset(rulepath);
+        }
+    }
+
+    /**
+     * Causes a new #Ruleset to be created from the
+     * file at @rulepath and to be stored in this libs memory
+     */
+    private void parse_ruleset(string rulepath) {
+        Xml.Doc* doc = Xml.Parser.parse_file(rulepath); 
+        if (doc == null) {
+            warning("Could not parse %s".printf(rulepath));
+            return;
+        }
+
+        Xml.Node* root = doc->get_root_element();
+        if (root != null) {
+            try {
+                var rs = new Ruleset.from_xml(root);
+                foreach (string host in rs.targets)
+                    rulesets.set(host,rs);
+            } catch (RulesetError e) {
+            }
+        } else {
+            warning("No Root element in %s".printf(rulepath));
+        }
+
+        delete doc;
     }
 
     /**
      * Returns only the host-part of @url 
      */
     private string extract_host(string url) {
-        return "";
+        var uri = Xml.URI.parse(url);
+        return uri.server;
     }
-
-    /**
-     *
-     */
 }
