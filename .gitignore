@@ -1,6 +1,13 @@
 .*.sw*
+*.c
 https-everywhere/*
 CMakeCache.txt
 CMakeFiles/
-cmake_install.txt
+cmake_install.cmake
 Makefile
+src/dummy*
+
+httpseverywhere.h
+httpseverywhere.vapi
+libhttpseverywhere.so
+
