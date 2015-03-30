@@ -160,13 +160,42 @@ namespace HTTPSEverywhere {
 
     public class Target : GLib.Object {
         public string host {get;set;default="";}
-        private Regex wildcardcheck;
+        private Regex? wildcardcheck;
 
+        /**
+         * Defines a new Target. Hosts of targets are only allowed to have one
+         * asterisk as a wildcard-symbol
+         */
         public Target(string host) {
-            
+            this.host = host;
+            if (count_char(host,'*') > 1) {
+                warning("Ignoring host %s. Contains more than one wildcard.".printf(host));
+                return;
+            }
+            string escaped = Regex.escape_string(host);
+            escaped = escaped.replace("""\*""", ".*");
+            this.wildcardcheck = new Regex(escaped);
         }
+
+        /**
+         * This method checks if this target is applying to the given @url
+         */
         public bool matches(string url) {
-            return false;
+            if (this.wildcardcheck == null) {
+                warning("Tried to check invalid host: %s".printf(this.host));
+                return false;
+            }
+            return this.wildcardcheck.match(url);
         }
     }
+
+    private uint count_char(string s, unichar x) {
+        uint r = 0;
+        for (int i = 0; i < s.char_count(); i++) {
+            if (s.get_char(i) == x)
+                r++;
+        }
+        return r;
+    }
+
 }
