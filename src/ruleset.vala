@@ -142,6 +142,7 @@ namespace HTTPSEverywhere {
 
         public Rule (string from, string to) {
             this.from = new Regex(from);
+            this.to = to;
         }
 
         public string rewrite(string url) {
