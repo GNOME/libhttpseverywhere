@@ -114,6 +114,20 @@ namespace HTTPSEverywhere {
         }
 
         public string rewrite(string url) {
+            // Skip if this rule is inactive
+            if (this.default_off){
+                info("The rule %s is deactivated".printf(this.name));
+                return url;
+            }
+
+            // Skip if the given @url matches any exclusions
+            foreach (string exc in this.exclusions) {
+                var exc_regex = new Regex(exc);
+                if (exc_regex.match(url, 0))
+                    return url;
+            }
+
+            // Rewrite the @url by the given rules
             string u = url;
             foreach (Rule rule in this.rules) {
                 u = rule.rewrite(u);
