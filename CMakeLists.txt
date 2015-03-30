@@ -1,6 +1,8 @@
 cmake_minimum_required (VERSION 2.6)
 project(libhttpseverywhere C)
 
+SET(VERSION "0.1")
+
 list(APPEND CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/vala
 )
@@ -45,6 +47,7 @@ if (GEE10)
         --target-glib 2.32
         --library=httpseverywhere
         -H include/httpseverywhere.h
+        --gir=HTTPSEverywhere-${VERSION}.gir
     )
 else()
     vala_precompile(VALA_LIB_C
@@ -59,6 +62,7 @@ else()
         --target-glib 2.32
         --library=httpseverywhere
         -H include/httpseverywhere.h
+        --gir=HTTPSEverywhere-${VERSION}.gir
     )
 endif()
 
@@ -66,6 +70,16 @@ add_definitions(-fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIC)
 add_definitions(-w)
 
 add_library("httpseverywhere" SHARED ${VALA_LIB_C})  
+
+add_custom_target(typelib ALL
+    COMMAND
+        g-ir-compiler --shared-library=libhttpseverywhere.so HTTPSEverywhere-${VERSION}.gir
+                      -o HTTPSEverywhere-${VERSION}.typelib
+    DEPENDS
+        "httpseverywhere"
+    COMMENT
+        "Creating typelib"
+)
 
 install(DIRECTORY "https-everywhere/src/chrome/content/rules" DESTINATION share/${PROJECT_NAME})
 install(FILES "include/httpseverywhere.h" DESTINATION include )

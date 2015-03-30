@@ -11,4 +11,6 @@ src/dummy*
 httpseverywhere.h
 httpseverywhere.vapi
 libhttpseverywhere.so
+HTTPSEverywhere-*.typelib
+HTTPSEverywhere-*.gir
 

@@ -1,0 +1,25 @@
+
+
+build dependencies:
+
+    gcc
+    valac
+    gobject-introspection
+    libgirepository1.0-dev
+    gee
+    gobject
+    glib
+    libxml-2.0
+
+runtime deps
+
+    gobject
+    glib
+    gee
+    libxml-2.0
+
+
+pitfalls:
+
+    GIR-versions must be exactly X.Y 
+    only major and minor version number
