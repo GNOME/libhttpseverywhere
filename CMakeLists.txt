@@ -12,6 +12,7 @@ include(ValaVersion)
 
 find_package(Vala REQUIRED)
 ensure_vala_version("0.26" MINIMUM)
+find_program(VALADOC_EXEC valadoc)
 
 find_package(PkgConfig)
 
@@ -63,6 +64,26 @@ else()
         --library=httpseverywhere
         -H include/httpseverywhere.h
         --gir=HTTPSEverywhere-${VERSION}.gir
+    )
+endif()
+
+if (GEE10)
+    add_custom_target(docs ALL
+        COMMAND
+            ${VALADOC_EXEC} -o doc --package-name=httpseverywhere --pkg libxml-2.0 --pkg gee-1.0
+                src/https_everywhere.vala
+                src/ruleset.vala
+        COMMENT
+            "Generating documentation"
+    )
+else()
+    add_custom_target(docs ALL
+        COMMAND
+            ${VALADOC_EXEC} -o doc --package-name=httpseverywhere --pkg libxml-2.0 --pkg gee-0.8
+                src/https_everywhere.vala
+                src/ruleset.vala
+        COMMENT
+            "Generating documentation"
     )
 endif()
 
