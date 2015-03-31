@@ -64,6 +64,9 @@ namespace HTTPSEverywhere {
             critical("HTTPSEverywhere was not initialized");
             return false;
         }
+        foreach (Target target in rulesets.keys)
+            if (target.matches(url))
+                return true;
         return false;
     }
 
