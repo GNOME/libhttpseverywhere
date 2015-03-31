@@ -68,7 +68,7 @@ else()
 endif()
 
 if (GEE10)
-    add_custom_target(docs ALL
+    add_custom_target(docs
         COMMAND
             ${VALADOC_EXEC} -o doc --package-name=httpseverywhere --pkg libxml-2.0 --pkg gee-1.0
                 src/https_everywhere.vala
@@ -104,6 +104,7 @@ add_custom_target(typelib ALL
 
 install(DIRECTORY "https-everywhere/src/chrome/content/rules" DESTINATION share/${PROJECT_NAME})
 install(FILES "include/httpseverywhere.h" DESTINATION include )
+install(FILES HTTPSEverywhere-${VERSION}.typelib DESTINATION lib/girepository-1.0)
 install(TARGETS "httpseverywhere"
     LIBRARY DESTINATION lib
 )
