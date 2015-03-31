@@ -100,6 +100,8 @@ namespace HTTPSEverywhere {
 
         // Cause each rule to be parsed and loaded
         foreach (string rulepath in rulepaths.values) {
+            if (!rulepath.has_suffix(".xml"))
+                continue;
             parse_ruleset(rulepath);
         }
     }
