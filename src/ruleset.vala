@@ -152,9 +152,13 @@ namespace HTTPSEverywhere {
             MatchInfo info;
             if (this.from.match(url, 0, out info)) {
                 string ret = this.to;
-                for (int i = 1; i < info.get_match_count(); i++) {
-                    stdout.printf("replacing %d match %s\n", i, info.fetch(i));
-                    ret = ret.replace("$%d".printf(i),info.fetch(i));
+                if (info.get_match_count() > 1) {
+                    for (int i = 1; i < info.get_match_count(); i++) {
+                        ret = ret.replace("$%d".printf(i),info.fetch(i));
+                    }
+                }
+                if (info.get_match_count() == 1) {
+                    ret = url.replace(info.fetch(0), this.to);
                 }
                 return ret;
             } else

@@ -37,11 +37,13 @@ namespace HTTPSEverywhere {
      * Takes an @url and returns the appropriate
      * HTTPS-enabled counterpart if there is any
      */
-    public string rewrite(string url) {
+    public string rewrite(owned string url) {
         if (!initialized){
             critical("HTTPSEverywhere was not initialized");
             return url;
         }
+        if (!url.has_suffix("/"))
+            url += "/";
         Ruleset? rs = null;
         foreach (Target target in rulesets.keys) {
             if (target.matches(url)) {
