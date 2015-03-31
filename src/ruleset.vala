@@ -94,6 +94,9 @@ namespace HTTPSEverywhere {
                         else
                             warning("Skipped malformed securecookie");
                         break;
+                    case "test":
+                        // TODO: implement
+                        break;
                     default:
                         warning("Unknown node found: %s".printf(cn->name));
                         break;
