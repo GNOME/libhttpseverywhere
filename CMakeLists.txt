@@ -77,7 +77,7 @@ if (GEE10)
             "Generating documentation"
     )
 else()
-    add_custom_target(docs ALL
+    add_custom_target(docs
         COMMAND
             ${VALADOC_EXEC} -o doc --package-name=httpseverywhere --pkg libxml-2.0 --pkg gee-0.8
                 src/https_everywhere.vala
