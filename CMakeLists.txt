@@ -92,6 +92,18 @@ add_definitions(-w)
 
 add_library("httpseverywhere" SHARED ${VALA_LIB_C})  
 
+add_custom_target(rulesets ALL
+    COMMAND
+        git submodule init
+    COMMAND
+        git submodule update
+    COMMAND
+        sh remove_inactive_rulesets.sh
+    COMMENT
+        "Fetching Rulesets"
+)    
+        
+
 add_custom_target(typelib ALL
     COMMAND
         g-ir-compiler --shared-library=libhttpseverywhere.so HTTPSEverywhere-${VERSION}.gir
