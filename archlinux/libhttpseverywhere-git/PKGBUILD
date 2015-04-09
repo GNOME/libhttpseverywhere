@@ -3,7 +3,7 @@
 _pkgname=libhttpseverywhere
 pkgname="$_pkgname-git"
 pkgrel=1
-pkgdesc="the visual history browser"
+pkgdesc="library to use HTTPSEverywhere in desktop applications"
 arch=('i686' 'x86_64')
 url="https://github.com/grindhold/libhttpseverywhere/"
 license=('LGPL3')
