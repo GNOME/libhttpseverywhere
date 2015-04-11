@@ -97,8 +97,6 @@ add_custom_target(rulesets ALL
         git submodule init
     COMMAND
         git submodule update
-    COMMAND
-        sh remove_inactive_rulesets.sh
     COMMENT
         "Fetching Rulesets"
 )    
