@@ -1,0 +1,9 @@
+prefix=/usr
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: httpseverywhere
+Description: library that enables the developer to use https everywhere. 
+URL: https://github.com/grindhold/libhttpseverywhere/
+Requires: libxml-2.0 gee-0.8
+Version: 0.1 

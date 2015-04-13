@@ -115,6 +115,11 @@ add_custom_target(typelib ALL
 install(DIRECTORY "https-everywhere/src/chrome/content/rules" DESTINATION share/${PROJECT_NAME})
 install(FILES "include/httpseverywhere.h" DESTINATION include )
 install(FILES HTTPSEverywhere-${VERSION}.typelib DESTINATION lib/girepository-1.0)
+if (GEE10)
+    install(FILES data/pc_gee_old/httpseverywhere.pc DESTINATION lib/pkgconfig)
+else()
+    install(FILES data/pc_gee_new/httpseverywhere.pc DESTINATION lib/pkgconfig)
+endif()
 install(TARGETS "httpseverywhere"
     LIBRARY DESTINATION lib
 )
