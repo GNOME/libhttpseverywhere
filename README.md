@@ -16,5 +16,5 @@ that you can use the lib in many popular languages like e.g. Ruby, Python or Jav
 Current Status
 --------------
 
-Don't even look at it. It will break.
+~~Don't even look at it. It will break.~~  Looks pretty good now :)
 
