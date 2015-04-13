@@ -19,6 +19,14 @@ pkgver() {
   echo "$(git rev-list --count HEAD)+g$(git rev-parse --short HEAD)"
 }
 
+postinst() {
+  cd /usr/share/libhttpseverywhere/rules
+
+  grep -ri "default_off=\"" | cut -f 1 | sed -e 's/\.xml:.*$/.xml/' | grep .xml$ | xargs -I{} rm {}
+
+  grep -ri "default_off=\'" | cut -f 1 | sed -e 's/\.xml:.*$/.xml/' | grep .xml$ | xargs -I{} rm {}
+}
+
 build() {
   cd "$srcdir/$_pkgname"
   cmake -DCMAKE_INSTALL_PREFIX="$pkgdir/usr"
