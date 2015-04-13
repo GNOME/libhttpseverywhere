@@ -140,12 +140,14 @@ namespace HTTPSEverywhere {
     }
 
     private class Rule : GLib.Object {
+        private Regex obsolete_placeholders;
         private Regex from;
         private string to = "";
 
         public Rule (string from, string to) {
             this.from = new Regex(from);
             this.to = to;
+            this.obsolete_placeholders = /\$\d/;
         }
 
         public string rewrite(string url) {
@@ -159,6 +161,8 @@ namespace HTTPSEverywhere {
                 }
                 if (info.get_match_count() == 1) {
                     ret = url.replace(info.fetch(0), this.to);
+                    // Remove unused $-placeholders
+                    ret = string.joinv("", this.obsolete_placeholders.split(ret));
                 }
                 return ret;
             } else
