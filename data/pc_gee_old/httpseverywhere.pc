@@ -6,4 +6,5 @@ Name: httpseverywhere
 Description: library that enables the developer to use https everywhere. 
 URL: https://github.com/grindhold/libhttpseverywhere/
 Requires: libxml-2.0 gee-1.0
-Version: 0.1 
+Version: 0.1
+Libs: -lhttpseverywhere
