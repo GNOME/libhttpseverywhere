@@ -1,3 +1,10 @@
+libhttpseverywhere (0.0.2-1) UNRELEASED; urgency=low
+
+  * Bumped HTTPSEverywhere version to 5.0.4
+  * Fixed some names in debian packages file 
+
+ -- Daniel Brendle <grindhold@skarphed.org>  Tue, 03 Mar 2015 04:55:52 +0100
+
 libhttpseverywhere (0.0.1-1) UNRELEASED; urgency=low
 
   * Initial release. (Closes: #XXXXXX)
