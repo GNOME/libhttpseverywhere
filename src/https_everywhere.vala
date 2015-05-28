@@ -164,12 +164,4 @@ namespace HTTPSEverywhere {
 
         delete doc;
     }
-
-    /**
-     * Returns only the host-part of @url 
-     */
-    private string extract_host(string url) {
-        var uri = Xml.URI.parse(url);
-        return uri.server;
-    }
 }
