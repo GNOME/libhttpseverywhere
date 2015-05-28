@@ -35,6 +35,12 @@ add_definitions(${GEE_CFLAGS} ${GEE_CFLAGS_OTHER})
 link_libraries(${GEE_LIBRARIES})
 link_directories(${GEE_LIBRARY_DIRS})
 
+pkg_check_modules(SQLITE3 REQUIRED sqlite3)
+add_definitions(${SQLITE3_CFLAGS} ${SQLITE3_CFLAGS_OTHER})
+link_libraries(${SQLITE3_LIBRARIES})
+link_directories(${SQLITE3_LIBRARY_DIRS})
+
+
 if (GEE10)
     vala_precompile(VALA_LIB_C
         "src/dummy.vala"
@@ -43,6 +49,7 @@ if (GEE10)
     PACKAGES
         libxml-2.0
         gee-1.0
+        sqlite3
     OPTIONS
         --thread
         --target-glib 2.32
@@ -58,6 +65,7 @@ else()
     PACKAGES
         libxml-2.0
         gee-0.8
+        sqlite3
     OPTIONS
         --thread
         --target-glib 2.32

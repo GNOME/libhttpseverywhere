@@ -21,8 +21,11 @@
 
 namespace HTTPSEverywhere {
     private bool initialized = false;
+    private Sqlite.Database? db = null;
+
     private RewriteResult last_rewrite_state;
-    private Gee.HashMap<Target, Ruleset> rulesets;
+    private Gee.HashMap<Target, int> targets;
+    private Gee.HashMap<int, Ruleset> rulesets;
 
     public enum RewriteResult {
         /**
@@ -45,8 +48,33 @@ namespace HTTPSEverywhere {
      * the rulesets from the filesystem.
      */
     public void init() {
-        rulesets = new Gee.HashMap<Target, Ruleset>();
-        load_rulesets();
+        targets = new Gee.HashMap<Target, int>();
+        rulesets = new Gee.HashMap<int, Ruleset>();
+
+        var datapaths = new Gee.ArrayList<string>();
+
+        // Specify the paths to search for rules in
+        datapaths.add(Path.build_filename(Environment.get_user_data_dir(),
+                                          "libhttpseverywhere", "rulesets.sqlite"));
+        foreach (string dp in Environment.get_system_data_dirs())
+            datapaths.add(Path.build_filename(dp, "libhttpseverywhere", "rulesets.sqlite"));
+
+        int db_status = Sqlite.ERROR;
+        foreach (string dp in datapaths) {
+            db_status = Sqlite.Database.open(dp, out db);
+            if (db_status == Sqlite.OK)
+                break;
+        }
+        if (db_status != Sqlite.OK) {
+            string locations = "\n";
+            foreach (string location in datapaths)
+                locations += "%s\n".printf(location);
+            critical("Could not find any suitable database in the following locations:%s",
+                     locations);
+            return;
+        }
+
+        load_targets();
         initialized = true;
     }
 
@@ -70,9 +98,12 @@ namespace HTTPSEverywhere {
         if (!url.has_suffix("/"))
             url += "/";
         Ruleset? rs = null;
-        foreach (Target target in rulesets.keys) {
+        foreach (Target target in targets.keys) {
             if (target.matches(url)) {
-                rs = rulesets.get(target);
+                int ruleset_id = targets.get(target);
+                if (!rulesets.has_key(ruleset_id))
+                    load_ruleset(ruleset_id);
+                rs = rulesets.get(ruleset_id);
                 break;
             }
         }
@@ -93,60 +124,71 @@ namespace HTTPSEverywhere {
      * given URL
      */
     public bool has_https(string url) {
+        assert(initialized);
         if (!initialized){
             critical("HTTPSEverywhere was not initialized");
             return false;
         }
-        foreach (Target target in rulesets.keys)
+        foreach (Target target in targets.keys)
             if (target.matches(url))
                 return true;
         return false;
     }
 
+    private const string QRY_TARGETS = "SELECT host, ruleset_id FROM targets;";
+
     /**
-     * Locates all rulesets that can be found in the system
-     * And causes them to be parsed into ram.
+     * Loads all possible targets into the ram
      */
-    private void load_rulesets() {
-        var rulepaths = new Gee.HashMap<string, string>();
-        var datapaths = new Gee.ArrayList<string>();
-
-        // Specify the paths to search for rules in 
-        foreach (string dp in Environment.get_system_data_dirs())
-            datapaths.add(dp);
-        datapaths.add(Environment.get_user_data_dir());
-
-        // Collects rules throughout the system
-        foreach (string dir in datapaths) {
-            string ruledirpath = Path.build_filename(dir, "libhttpseverywhere", "rules");
-            Dir ruledir;
-            try {
-                ruledir = Dir.open (ruledirpath);
-            } catch (FileError e) {
-                continue;
-            }
-            string? rule = null;
-            while ((rule = ruledir.read_name()) != null) {
-                rulepaths.set(rule, Path.build_filename(ruledirpath, rule));
-            }
+    private void load_targets() {
+        Sqlite.Statement stmnt;
+        int err = db.prepare_v2(QRY_TARGETS, QRY_TARGETS.length, out stmnt);
+        if (err != Sqlite.OK) {
+            critical("Could not parse QRY_TARGETS");
+            return;
         }
-
-        // Cause each rule to be parsed and loaded
-        foreach (string rulepath in rulepaths.values) {
-            if (!rulepath.has_suffix(".xml"))
-                continue;
-            parse_ruleset(rulepath);
+        string host;
+        int ruleset_id;
+        while (stmnt.step() == Sqlite.ROW) {
+            host = stmnt.column_text(0);
+            ruleset_id = stmnt.column_int(1);
+            targets.set(new Target(host), ruleset_id);
         }
+    }
+
+    private const string QRY_RULESET = """
+        SELECT contents FROM rulesets WHERE id = $RID;
+    """;
+
+    /**
+     * Loads a ruleset from the database and stores it in the ram cache
+     */
+    private void load_ruleset(int ruleset_id) {
+        Sqlite.Statement stmnt;
+        int err = db.prepare_v2(QRY_RULESET, QRY_RULESET.length, out stmnt);
+        if (err != Sqlite.OK) {
+            critical("Could not parse QRY_RULESET");
+            return;
+        }
+        int id_param_pos = stmnt.bind_parameter_index("$RID");
+        assert (id_param_pos > 0);
+        stmnt.bind_int(id_param_pos, ruleset_id);
+        if (stmnt.step() == Sqlite.ROW) {
+            string ruleset = stmnt.column_text(0);
+            parse_ruleset(ruleset_id, ruleset);
+        } else
+            warning("Could not find ruleset for ID. This indicates that there" +
+                    " is a ruleset missing though it is referenced by a target.");
     }
 
     /**
      * Causes a new #Ruleset to be created from the
      * file at @rulepath and to be stored in this libs memory
      */
-    private void parse_ruleset(string rulepath) {
-        Xml.Doc* doc = Xml.Parser.parse_file(rulepath); 
+    private void parse_ruleset(int id, string ruledata) {
+        Xml.Doc* doc = Xml.Parser.parse_doc(ruledata);
         if (doc == null) {
-            warning("Could not parse %s".printf(rulepath));
+            warning("Could not parse rule with id %d".printf(id));
             return;
         }
 
@@ -154,12 +196,11 @@ namespace HTTPSEverywhere {
         if (root != null) {
             try {
                 var rs = new Ruleset.from_xml(root);
-                foreach (Target target in rs.targets)
-                    rulesets.set(target, rs);
+                rulesets.set(id, rs);
             } catch (RulesetError e) {
             }
         } else {
-            warning("No Root element in %s".printf(rulepath));
+            warning("No Root element in rule with id %d".printf(id));
         }
 
         delete doc;
