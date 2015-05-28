@@ -21,7 +21,24 @@
 
 namespace HTTPSEverywhere {
     private bool initialized = false;
+    private RewriteResult last_rewrite_state;
     private Gee.HashMap<Target, Ruleset> rulesets;
+
+    public enum RewriteResult {
+        /**
+         * The URL has successfully been rewritten to HTTPS
+         */
+        OK,
+        /**
+         * There was a ruleset for the host but no rule matched
+         * for the given URL
+         */
+        NO_MATCH,
+        /**
+         * There is no ruleset for the given host
+         */
+        NO_RULESET
+    }
 
     /**
      * This function initializes HTTPSEverywhere by loading
@@ -31,6 +48,14 @@ namespace HTTPSEverywhere {
         rulesets = new Gee.HashMap<Target, Ruleset>();
         load_rulesets();
         initialized = true;
+    }
+
+    /**
+     * Obtain the RewriteResult for the last rewrite that
+     * has been done with HTTPSEverywhere.rewrite(string url)
+     */
+    public RewriteResult rewrite_result() {
+        return last_rewrite_state;
     }
 
     /**
@@ -51,10 +76,16 @@ namespace HTTPSEverywhere {
                 break;
             }
         }
-        if (rs == null)
+        if (rs == null) {
+            last_rewrite_state = RewriteResult.NO_RULESET;
             return url;
-        else 
-            return rs.rewrite(url);
+        } else {
+            last_rewrite_state = RewriteResult.NO_MATCH;
+            string rurl = rs.rewrite(url);
+            if (url.has_prefix("https://"))
+                last_rewrite_state = RewriteResult.OK;
+            return rs.rewrite(rurl);
+        }
     }
 
     /**
