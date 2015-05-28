@@ -39,7 +39,7 @@ namespace HTTPSEverywhere {
         private bool default_off;
 
         private Gee.ArrayList<Rule> rules;
-        private Gee.ArrayList<string> exclusions;
+        private Gee.ArrayList<Regex> exclusions;
         private Gee.ArrayList<Target> _targets;
         private string securecookie;
 
@@ -57,7 +57,7 @@ namespace HTTPSEverywhere {
          */
         public Ruleset() {
             this.rules = new Gee.ArrayList<Rule>();
-            this.exclusions = new Gee.ArrayList<string>();
+            this.exclusions = new Gee.ArrayList<Regex>();
             this._targets = new Gee.ArrayList<Target>();
         }
 
@@ -135,7 +135,12 @@ namespace HTTPSEverywhere {
          * Add an exclusion to this Ruleset
          */
         public void add_exclusion(string exclusion) {
-            this.exclusions.add(exclusion);
+            try {
+                var exc_regex = new Regex(exclusion);
+                this.exclusions.add(exc_regex);
+            } catch (GLib.RegexError e) {
+                warning("Could not add %s to exclusions", exclusion);
+            }
         }
 
         /**
@@ -156,9 +161,8 @@ namespace HTTPSEverywhere {
             }
 
             // Skip if the given @url matches any exclusions
-            foreach (string exc in this.exclusions) {
-                var exc_regex = new Regex(exc);
-                if (exc_regex.match(url, 0))
+            foreach (Regex exc in this.exclusions) {
+                if (exc.match(url, 0))
                     return url;
             }
 
@@ -177,7 +181,7 @@ namespace HTTPSEverywhere {
      */
     private class Rule : GLib.Object {
         private Regex obsolete_placeholders;
-        private Regex from;
+        private Regex? from;
         private string to = "";
 
         /**
@@ -185,7 +189,12 @@ namespace HTTPSEverywhere {
          * the from string should be a valid regex
          */
         public Rule (string from, string to) {
-            this.from = new Regex(from);
+            try {
+                this.from = new Regex(from);
+            } catch (GLib.RegexError e) {
+                warning("Invalid from-regex in rule: %s",from);
+                this.from = null;
+            }
             this.to = to;
             this.obsolete_placeholders = /\$\d/;
         }
@@ -194,6 +203,8 @@ namespace HTTPSEverywhere {
          * Turns a HTTP-URL into an appropriate HTTPS-URL
          */
         public string rewrite(string url) {
+            if (this.from == null)
+                return url;
             MatchInfo info;
             if (this.from.match(url, 0, out info)) {
                 string ret = this.to;
@@ -232,7 +243,9 @@ namespace HTTPSEverywhere {
             }
             string escaped = Regex.escape_string(host);
             escaped = escaped.replace("""\*""", ".*");
-            this.wildcardcheck = new Regex(escaped);
+            try {
+                this.wildcardcheck = new Regex(escaped);
+            } catch (GLib.RegexError e) {}
         }
 
         /**
