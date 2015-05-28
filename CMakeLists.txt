@@ -46,7 +46,9 @@ if (GEE10)
         "src/dummy.vala"
         "src/https_everywhere.vala"
         "src/ruleset.vala"
+        "src/update.vala"
     PACKAGES
+        gio-2.0
         libxml-2.0
         gee-1.0
         sqlite3
@@ -62,7 +64,9 @@ else()
         "src/dummy.vala"
         "src/https_everywhere.vala"
         "src/ruleset.vala"
+        "src/update.vala"
     PACKAGES
+        gio-2.0
         libxml-2.0
         gee-0.8
         sqlite3
