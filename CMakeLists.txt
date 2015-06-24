@@ -35,14 +35,23 @@ add_definitions(${GEE_CFLAGS} ${GEE_CFLAGS_OTHER})
 link_libraries(${GEE_LIBRARIES})
 link_directories(${GEE_LIBRARY_DIRS})
 
+pkg_check_modules(SQLITE3 REQUIRED sqlite3)
+add_definitions(${SQLITE3_CFLAGS} ${SQLITE3_CFLAGS_OTHER})
+link_libraries(${SQLITE3_LIBRARIES})
+link_directories(${SQLITE3_LIBRARY_DIRS})
+
+
 if (GEE10)
     vala_precompile(VALA_LIB_C
         "src/dummy.vala"
         "src/https_everywhere.vala"
         "src/ruleset.vala"
+        "src/update.vala"
     PACKAGES
+        gio-2.0
         libxml-2.0
         gee-1.0
+        sqlite3
     OPTIONS
         --thread
         --target-glib 2.32
@@ -55,9 +64,12 @@ else()
         "src/dummy.vala"
         "src/https_everywhere.vala"
         "src/ruleset.vala"
+        "src/update.vala"
     PACKAGES
+        gio-2.0
         libxml-2.0
         gee-0.8
+        sqlite3
     OPTIONS
         --thread
         --target-glib 2.32
@@ -97,8 +109,6 @@ add_custom_target(rulesets ALL
         git submodule init
     COMMAND
         git submodule update
-    COMMAND
-        sh remove_inactive_rulesets.sh
     COMMENT
         "Fetching Rulesets"
 )    
@@ -117,6 +127,11 @@ add_custom_target(typelib ALL
 install(DIRECTORY "https-everywhere/src/chrome/content/rules" DESTINATION share/${PROJECT_NAME})
 install(FILES "include/httpseverywhere.h" DESTINATION include )
 install(FILES HTTPSEverywhere-${VERSION}.typelib DESTINATION lib/girepository-1.0)
+if (GEE10)
+    install(FILES data/pc_gee_old/httpseverywhere.pc DESTINATION lib/pkgconfig)
+else()
+    install(FILES data/pc_gee_new/httpseverywhere.pc DESTINATION lib/pkgconfig)
+endif()
 install(TARGETS "httpseverywhere"
     LIBRARY DESTINATION lib
 )

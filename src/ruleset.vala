@@ -21,30 +21,49 @@
 
 namespace HTTPSEverywhere {
     public errordomain RulesetError {
-        PARSE_ERROR // Gets thrown when a ruleset fails to parse
+        /**
+         * Gets thrown when a ruleset fails to parse
+         */
+        PARSE_ERROR
     }
 
+    /**
+     * This represents the contents of a HTTPSEverywhere ruleset-file
+     * Rulesets contain a set of target-hosts that the rules apply to
+     * furthermore it contains a set of regular expressions that determine
+     * how to convert a HTTP-URL into the corresponding HTTPS-URL
+     */
     public class Ruleset : GLib.Object {
         private string name;
         private string platform;
         private bool default_off;
 
         private Gee.ArrayList<Rule> rules;
-        private Gee.ArrayList<string> exclusions;
+        private Gee.ArrayList<Regex> exclusions;
         private Gee.ArrayList<Target> _targets;
+        private string securecookie;
+
+        /**
+         * The target-hosts this ruleset applies to
+         */
         public Gee.ArrayList<Target> targets {
             get {
                 return this._targets;
             }
         }
-        private string securecookie;
 
+        /**
+         * Creates an empty Ruleset
+         */
         public Ruleset() {
             this.rules = new Gee.ArrayList<Rule>();
-            this.exclusions = new Gee.ArrayList<string>();
+            this.exclusions = new Gee.ArrayList<Regex>();
             this._targets = new Gee.ArrayList<Target>();
         }
 
+        /**
+         * Creates a Ruleset from a ruleset file
+         */
         public Ruleset.from_xml(Xml.Node* root) throws RulesetError {
             this();
             if (root->name != "ruleset")
@@ -104,18 +123,36 @@ namespace HTTPSEverywhere {
             }
         }
 
+        /**
+         * Add a rewrite rule to this Ruleset
+         * the parameters "from" and "to" should be valid regexes
+         */
         public void add_rule(string from, string to) {
             this.rules.add(new Rule(from, to));
         }
 
+        /**
+         * Add an exclusion to this Ruleset
+         */
         public void add_exclusion(string exclusion) {
-            this.exclusions.add(exclusion);
+            try {
+                var exc_regex = new Regex(exclusion);
+                this.exclusions.add(exc_regex);
+            } catch (GLib.RegexError e) {
+                warning("Could not add %s to exclusions", exclusion);
+            }
         }
 
+        /**
+         * Add a target host to this Ruleset
+         */
         public void add_target(string host) {
             this._targets.add(new Target(host));
         }
 
+        /**
+         * Rewrite an URL from HTTP to HTTPS
+         */
         public string rewrite(string url) {
             // Skip if this rule is inactive
             if (this.default_off){
@@ -124,9 +161,8 @@ namespace HTTPSEverywhere {
             }
 
             // Skip if the given @url matches any exclusions
-            foreach (string exc in this.exclusions) {
-                var exc_regex = new Regex(exc);
-                if (exc_regex.match(url, 0))
+            foreach (Regex exc in this.exclusions) {
+                if (exc.match(url, 0))
                     return url;
             }
 
@@ -139,16 +175,36 @@ namespace HTTPSEverywhere {
         }
     }
 
+    /**
+     * This class represents a rewrite rule
+     * Rewrite rules consist of a from-regex and a to-string
+     */
     private class Rule : GLib.Object {
-        private Regex from;
+        private Regex obsolete_placeholders;
+        private Regex? from;
         private string to = "";
 
+        /**
+         * Create a new rule from a from-string and a to-string
+         * the from string should be a valid regex
+         */
         public Rule (string from, string to) {
-            this.from = new Regex(from);
+            try {
+                this.from = new Regex(from);
+            } catch (GLib.RegexError e) {
+                warning("Invalid from-regex in rule: %s",from);
+                this.from = null;
+            }
             this.to = to;
+            this.obsolete_placeholders = /\$\d/;
         }
 
+        /**
+         * Turns a HTTP-URL into an appropriate HTTPS-URL
+         */
         public string rewrite(string url) {
+            if (this.from == null)
+                return url;
             MatchInfo info;
             if (this.from.match(url, 0, out info)) {
                 string ret = this.to;
@@ -159,6 +215,8 @@ namespace HTTPSEverywhere {
                 }
                 if (info.get_match_count() == 1) {
                     ret = url.replace(info.fetch(0), this.to);
+                    // Remove unused $-placeholders
+                    ret = string.joinv("", this.obsolete_placeholders.split(ret));
                 }
                 return ret;
             } else
@@ -166,6 +224,9 @@ namespace HTTPSEverywhere {
         }
     }
 
+    /**
+     * Use Targets to check if a Ruleset applies to an arbitrary URL
+     */
     public class Target : GLib.Object {
         public string host {get;set;default="";}
         private Regex? wildcardcheck;
@@ -182,7 +243,9 @@ namespace HTTPSEverywhere {
             }
             string escaped = Regex.escape_string(host);
             escaped = escaped.replace("""\*""", ".*");
-            this.wildcardcheck = new Regex(escaped);
+            try {
+                this.wildcardcheck = new Regex(escaped);
+            } catch (GLib.RegexError e) {}
         }
 
         /**
