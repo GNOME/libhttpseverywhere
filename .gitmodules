@@ -1,3 +1,4 @@
 [submodule "https-everywhere"]
 	path = https-everywhere
 	url = https://git.torproject.org/https-everywhere.git
+	shallow = true
