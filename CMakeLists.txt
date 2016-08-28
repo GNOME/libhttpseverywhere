@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 project(libhttpseverywhere C)
 
-SET(VERSION "0.1")
+SET(VERSION "0.0.3")
 
 list(APPEND CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/vala
