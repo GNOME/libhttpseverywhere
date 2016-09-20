@@ -90,7 +90,8 @@ namespace HTTPSEverywhere {
      * Takes an @url and returns the appropriate
      * HTTPS-enabled counterpart if there is any
      */
-    public string rewrite(owned string url) {
+    public string rewrite(string p_url) {
+        string url = p_url;
         if (!initialized){
             critical("HTTPSEverywhere was not initialized");
             return url;
