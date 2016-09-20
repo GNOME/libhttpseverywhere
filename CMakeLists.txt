@@ -26,6 +26,11 @@ add_definitions(${LIBXML2_CFLAGS} ${LIBXML2_CFLAGS_OTHER})
 link_libraries(${LIBXML2_LIBRARIES})
 link_directories(${LIBXML2_LIBRARY_DIRS})
 
+pkg_check_modules(LIBSOUP REQUIRED libsoup-2.4)
+add_definitions(${LIBSOUP_CFLAGS} ${LIBSOUP_CFLAGS_OTHER})
+link_libraries(${LIBSOUP_LIBRARIES})
+link_directories(${LIBSOUP_LIBRARY_DIRS})
+
 pkg_check_modules(GEE gee-0.8)
 if (NOT GEE_FOUND)
     pkg_check_modules(GEE REQUIRED gee-1.0)
@@ -52,6 +57,7 @@ if (GEE10)
         libxml-2.0
         gee-1.0
         sqlite3
+        libsoup-2.4
     OPTIONS
         --thread
         --target-glib 2.32
@@ -70,6 +76,7 @@ else()
         libxml-2.0
         gee-0.8
         sqlite3
+        libsoup-2.4
     OPTIONS
         --thread
         --target-glib 2.32
