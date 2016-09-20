@@ -103,17 +103,25 @@ namespace HTTPSEverywhere {
                 warning("Cannot start update: Update already in progress");
             }
             
-            // Get RDF data
-            update_state = UpdateState.LOADING_RDF;
-            //TODO: implement
+            var session = new Soup.Session();
+
 
             // Download the XPI package
             update_state = UpdateState.DOWNLOADING_XPI;
-            // TODO: implement
+            var msg = new Soup.Message("HEAD", "https://www.eff.org/files/https-everywhere-latest.xpi");
+            var stream = session.send(msg, null);
+            // We expect the packed archive to be ~5 MiB big
+            uint8[] output = new uint8[(5*1024*1024)];
+            // TODO: yield error if downloaded file is too big
+            size_t size_read;
+            stream.read_all(output, out size_read, null );
 
             // Decompressing the XPI package
             update_state = UpdateState.DECOMPRESSING_XPI;
             // TODO: implement
+            // TODO: (if possible) find a multiplatform way
+            //       to decompress the downloaded zip without
+            //       writing it to disk first
 
             // Copying the new Rules-SQLite-DB
             update_state = UpdateState.COPYING_RULES;
