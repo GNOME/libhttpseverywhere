@@ -21,6 +21,11 @@ add_definitions(${GLIB_CFLAGS} ${GLIB_CFLAGS_OTHER})
 link_libraries(${GLIB_LIBRARIES})
 link_directories(${GLIB_LIBRARY_DIRS})
 
+pkg_check_modules(LIBARCHIVE REQUIRED libarchive)
+add_definitions(${LIBARCHIVE_CFLAGS} ${LIBARCHIVE_CFLAGS_OTHER})
+link_libraries(${LIBARCHIVE_LIBRARIES})
+link_directories(${LIBARCHIVE_LIBRARY_DIRS})
+
 pkg_check_modules(LIBXML2 REQUIRED libxml-2.0)
 add_definitions(${LIBXML2_CFLAGS} ${LIBXML2_CFLAGS_OTHER})
 link_libraries(${LIBXML2_LIBRARIES})
@@ -58,6 +63,7 @@ if (GEE10)
         gee-1.0
         sqlite3
         libsoup-2.4
+        libarchive
     OPTIONS
         --thread
         --target-glib 2.32
@@ -77,6 +83,7 @@ else()
         gee-0.8
         sqlite3
         libsoup-2.4
+        libarchive
     OPTIONS
         --thread
         --target-glib 2.32
@@ -89,7 +96,7 @@ endif()
 if (GEE10)
     add_custom_target(docs
         COMMAND
-            ${VALADOC_EXEC} -o doc --package-name=httpseverywhere --pkg libxml-2.0 --pkg gee-1.0
+            ${VALADOC_EXEC} -o doc --package-name=httpseverywhere --pkg libxml-2.0 --pkg gee-1.0 --pkg libarchive
                 src/https_everywhere.vala
                 src/ruleset.vala
         COMMENT
@@ -98,7 +105,7 @@ if (GEE10)
 else()
     add_custom_target(docs
         COMMAND
-            ${VALADOC_EXEC} -o doc --package-name=httpseverywhere --pkg libxml-2.0 --pkg gee-0.8
+            ${VALADOC_EXEC} -o doc --package-name=httpseverywhere --pkg libxml-2.0 --pkg gee-0.8 --pkg libarchive
                 src/https_everywhere.vala
                 src/ruleset.vala
         COMMENT

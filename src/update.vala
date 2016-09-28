@@ -108,7 +108,7 @@ namespace HTTPSEverywhere {
 
             // Download the XPI package
             update_state = UpdateState.DOWNLOADING_XPI;
-            var msg = new Soup.Message("HEAD", "https://www.eff.org/files/https-everywhere-latest.xpi");
+            var msg = new Soup.Message("GET", "https://www.eff.org/files/https-everywhere-latest.xpi");
             var stream = session.send(msg, null);
             // We expect the packed archive to be ~5 MiB big
             uint8[] output = new uint8[(5*1024*1024)];
@@ -119,9 +119,30 @@ namespace HTTPSEverywhere {
             // Decompressing the XPI package
             update_state = UpdateState.DECOMPRESSING_XPI;
             // TODO: implement
-            // TODO: (if possible) find a multiplatform way
-            //       to decompress the downloaded zip without
-            //       writing it to disk first
+            
+            Archive.Read zipreader = new Archive.Read(); 
+            Archive.Write extractor = new Archive.Write(); 
+            zipreader.set_format(Archive.Format.ZIP);
+            var res = zipreader.open_memory(output, size_read);
+
+            string json = "";
+            unowned Archive.Entry e = null;
+            while (zipreader.next_header(out e) == Archive.Result.OK) {
+                void* jsonblock;
+                size_t offset;
+                if (e != null && e.pathname() == "chrome/content/rulesets.json") {
+                    while (Archive.Result.OK == zipreader.read_data_block(
+                        out jsonblock, out size_read, out offset)) {
+                        json += (string)jsonblock;
+                    }
+                    zipreader.read_data_block(out jsonblock, out size_read, out offset);
+                    json += (string)jsonblock;
+                } else 
+                    zipreader.read_data_skip();
+            }
+
+            stdout.printf(json);
+
 
             // Copying the new Rules-SQLite-DB
             update_state = UpdateState.COPYING_RULES;
