@@ -128,15 +128,13 @@ namespace HTTPSEverywhere {
             string json = "";
             unowned Archive.Entry e = null;
             while (zipreader.next_header(out e) == Archive.Result.OK) {
-                void* jsonblock;
-                size_t offset;
                 if (e != null && e.pathname() == "chrome/content/rulesets.json") {
+                    void* jsonblock;
+                    size_t offset;
                     while (Archive.Result.OK == zipreader.read_data_block(
                         out jsonblock, out size_read, out offset)) {
                         json += (string)jsonblock;
                     }
-                    zipreader.read_data_block(out jsonblock, out size_read, out offset);
-                    json += (string)jsonblock;
                 } else 
                     zipreader.read_data_skip();
             }
