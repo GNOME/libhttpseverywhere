@@ -118,7 +118,6 @@ namespace HTTPSEverywhere {
 
             // Decompressing the XPI package
             update_state = UpdateState.DECOMPRESSING_XPI;
-            // TODO: implement
             
             Archive.Read zipreader = new Archive.Read(); 
             Archive.Write extractor = new Archive.Write(); 
@@ -129,12 +128,19 @@ namespace HTTPSEverywhere {
             unowned Archive.Entry e = null;
             while (zipreader.next_header(out e) == Archive.Result.OK) {
                 if (e != null && e.pathname() == "chrome/content/rulesets.json") {
-                    void* jsonblock;
-                    size_t offset;
-                    while (Archive.Result.OK == zipreader.read_data_block(
-                        out jsonblock, out size_read, out offset)) {
+                    uint8[] jsonblock = new uint8[1024*1024];
+                    while (true) {
+                        var r = zipreader.read_data(jsonblock, 1024*1024);
+                        if (r < 0) {
+                            break; //TODO: yield error because reading failed
+                        }
+                        if (r < 1024*1024 && r != 0) {
+                            json += ((string)jsonblock).slice(0,r);
+                            break;
+                        }
                         json += (string)jsonblock;
                     }
+                    break; // we dont need to read more files if we have the rulesets
                 } else 
                     zipreader.read_data_skip();
             }
