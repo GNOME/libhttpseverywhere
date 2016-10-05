@@ -26,6 +26,11 @@ add_definitions(${LIBARCHIVE_CFLAGS} ${LIBARCHIVE_CFLAGS_OTHER})
 link_libraries(${LIBARCHIVE_LIBRARIES})
 link_directories(${LIBARCHIVE_LIBRARY_DIRS})
 
+pkg_check_modules(JSONGLIB REQUIRED json-glib-1.0)
+add_definitions(${JSONGLIB_CFLAGS} ${JSONGLIB_CFLAGS_OTHER})
+link_libraries(${JSONGLIB_LIBRARIES})
+link_directories(${JSONGLIB_LIBRARY_DIRS})
+
 pkg_check_modules(LIBXML2 REQUIRED libxml-2.0)
 add_definitions(${LIBXML2_CFLAGS} ${LIBXML2_CFLAGS_OTHER})
 link_libraries(${LIBXML2_LIBRARIES})
@@ -44,11 +49,6 @@ endif()
 add_definitions(${GEE_CFLAGS} ${GEE_CFLAGS_OTHER})
 link_libraries(${GEE_LIBRARIES})
 link_directories(${GEE_LIBRARY_DIRS})
-
-pkg_check_modules(SQLITE3 REQUIRED sqlite3)
-add_definitions(${SQLITE3_CFLAGS} ${SQLITE3_CFLAGS_OTHER})
-link_libraries(${SQLITE3_LIBRARIES})
-link_directories(${SQLITE3_LIBRARY_DIRS})
 
 
 if (GEE10)
