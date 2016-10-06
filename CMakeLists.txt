@@ -61,7 +61,7 @@ if (GEE10)
         gio-2.0
         libxml-2.0
         gee-1.0
-        sqlite3
+        json-glib-1.0
         libsoup-2.4
         libarchive
     OPTIONS
@@ -81,7 +81,7 @@ else()
         gio-2.0
         libxml-2.0
         gee-0.8
-        sqlite3
+        json-glib-1.0
         libsoup-2.4
         libarchive
     OPTIONS
@@ -118,16 +118,6 @@ add_definitions(-w)
 
 add_library("httpseverywhere" SHARED ${VALA_LIB_C})  
 
-add_custom_target(rulesets ALL
-    COMMAND
-        git submodule init
-    COMMAND
-        git submodule update
-    COMMENT
-        "Fetching Rulesets"
-)    
-        
-
 add_custom_target(typelib ALL
     COMMAND
         g-ir-compiler --shared-library=libhttpseverywhere.so HTTPSEverywhere-${VERSION}.gir
@@ -138,7 +128,7 @@ add_custom_target(typelib ALL
         "Creating typelib"
 )
 
-install(DIRECTORY "https-everywhere/src/chrome/content/rules" DESTINATION share/${PROJECT_NAME})
+install(FILES data/rulesets.json DESTINATION share/${PROJECT_NAME})
 install(FILES "include/httpseverywhere.h" DESTINATION include )
 install(FILES HTTPSEverywhere-${VERSION}.typelib DESTINATION lib/girepository-1.0)
 if (GEE10)

@@ -145,12 +145,11 @@ namespace HTTPSEverywhere {
                     zipreader.read_data_skip();
             }
 
-            stdout.printf(json);
-
-
-            // Copying the new Rules-SQLite-DB
+            // Copying the new Rules-File to the target
             update_state = UpdateState.COPYING_RULES;
-            // TODO: implement
+            string rulesets_path = Path.build_filename(Environment.get_user_data_dir(),
+                                          "libhttpseverywhere", rulesets_file);
+            FileUtils.set_contents(rulesets_path, json);
             
             update_state = UpdateState.FINISHED;    
             unlock_update();
