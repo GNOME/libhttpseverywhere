@@ -74,7 +74,7 @@ namespace HTTPSEverywhere {
             public get {return this._update_percentage;}
             private set {this._update_percentage = value;}
         }
-        
+
         /**
          * Writes a file to the disk that inhibits other instances
          * of this library from doing updates
@@ -89,7 +89,7 @@ namespace HTTPSEverywhere {
          */
         private void unlock_update() {
             // TODO: delete file
-            update_in_progress = false; 
+            update_in_progress = false;
         }
 
         /**
@@ -102,7 +102,7 @@ namespace HTTPSEverywhere {
             } catch (UpdateError e) {
                 warning("Cannot start update: Update already in progress");
             }
-            
+
             var session = new Soup.Session();
 
 
@@ -118,9 +118,9 @@ namespace HTTPSEverywhere {
 
             // Decompressing the XPI package
             update_state = UpdateState.DECOMPRESSING_XPI;
-            
-            Archive.Read zipreader = new Archive.Read(); 
-            Archive.Write extractor = new Archive.Write(); 
+
+            Archive.Read zipreader = new Archive.Read();
+            Archive.Write extractor = new Archive.Write();
             zipreader.set_format(Archive.Format.ZIP);
             var res = zipreader.open_memory(output, size_read);
 
@@ -135,13 +135,14 @@ namespace HTTPSEverywhere {
                             break; //TODO: yield error because reading failed
                         }
                         if (r < 1024*1024 && r != 0) {
+                            // FIXME: will this explode when multibyte unicode chars arrive?
                             json += ((string)jsonblock).slice(0,r);
                             break;
                         }
                         json += (string)jsonblock;
                     }
                     break; // we dont need to read more files if we have the rulesets
-                } else 
+                } else
                     zipreader.read_data_skip();
             }
 
@@ -150,8 +151,8 @@ namespace HTTPSEverywhere {
             string rulesets_path = Path.build_filename(Environment.get_user_data_dir(),
                                           "libhttpseverywhere", rulesets_file);
             FileUtils.set_contents(rulesets_path, json);
-            
-            update_state = UpdateState.FINISHED;    
+
+            update_state = UpdateState.FINISHED;
             unlock_update();
 
             return UpdateResult.SUCCESS;

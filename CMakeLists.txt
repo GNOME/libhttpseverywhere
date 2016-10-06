@@ -116,7 +116,7 @@ endif()
 add_definitions(-fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIC)
 add_definitions(-w)
 
-add_library("httpseverywhere" SHARED ${VALA_LIB_C})  
+add_library("httpseverywhere" SHARED ${VALA_LIB_C})
 
 add_custom_target(typelib ALL
     COMMAND

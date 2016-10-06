@@ -68,7 +68,7 @@ namespace HTTPSEverywhere {
             this();
             if (root->name != "ruleset")
                 throw new RulesetError.PARSE_ERROR("Name of rootnode must be 'ruleset'");
-            
+
             // Set the Rulesets attributes
             string? n = root->get_prop("name");
             string? m;
