@@ -20,12 +20,13 @@
 *********************************************************************/
 
 namespace HTTPSEverywhere {
+    private const string rulesets_file = "rulesets.json";
+    private Json.Parser parser;
     private bool initialized = false;
-    private Sqlite.Database? db = null;
 
     private RewriteResult last_rewrite_state;
-    private Gee.HashMap<Target, int> targets;
-    private Gee.HashMap<int, Ruleset> rulesets;
+    private Gee.HashMap<Target, Gee.ArrayList<uint>> targets;
+    private Gee.HashMap<uint, Ruleset> rulesets;
 
     public enum RewriteResult {
         /**
@@ -48,24 +49,28 @@ namespace HTTPSEverywhere {
      * the rulesets from the filesystem.
      */
     public void init() {
-        targets = new Gee.HashMap<Target, int>();
+        targets = new Gee.HashMap<Target,Gee.ArrayList<uint>>();
         rulesets = new Gee.HashMap<int, Ruleset>();
 
         var datapaths = new Gee.ArrayList<string>();
 
         // Specify the paths to search for rules in
         datapaths.add(Path.build_filename(Environment.get_user_data_dir(),
-                                          "libhttpseverywhere", "rulesets.sqlite"));
+                                          "libhttpseverywhere", rulesets_file));
         foreach (string dp in Environment.get_system_data_dirs())
-            datapaths.add(Path.build_filename(dp, "libhttpseverywhere", "rulesets.sqlite"));
+            datapaths.add(Path.build_filename(dp, "libhttpseverywhere", rulesets_file));
 
-        int db_status = Sqlite.ERROR;
+        HTTPSEverywhere.parser = new Json.Parser();
+        bool success = false;
+
         foreach (string dp in datapaths) {
-            db_status = Sqlite.Database.open(dp, out db);
-            if (db_status == Sqlite.OK)
-                break;
+            try {
+                parser.load_from_file(dp);
+            } catch(GLib.Error e) { continue; }
+            success = true;
+            break;
         }
-        if (db_status != Sqlite.OK) {
+        if (!success) {
             string locations = "\n";
             foreach (string location in datapaths)
                 locations += "%s\n".printf(location);
@@ -101,10 +106,11 @@ namespace HTTPSEverywhere {
         Ruleset? rs = null;
         foreach (Target target in targets.keys) {
             if (target.matches(url)) {
-                int ruleset_id = targets.get(target);
-                if (!rulesets.has_key(ruleset_id))
-                    load_ruleset(ruleset_id);
-                rs = rulesets.get(ruleset_id);
+                foreach (uint ruleset_id in targets.get(target)) {
+                    if (!rulesets.has_key(ruleset_id))
+                        load_ruleset(ruleset_id);
+                    rs = rulesets.get(ruleset_id);
+                }
                 break;
             }
         }
@@ -136,60 +142,66 @@ namespace HTTPSEverywhere {
         return false;
     }
 
-    private const string QRY_TARGETS = "SELECT host, ruleset_id FROM targets;";
-
     /**
-     * Loads all possible targets into the ram
+     * Loads all possible targets into memory
      */
     private void load_targets() {
-        Sqlite.Statement stmnt;
-        int err = db.prepare_v2(QRY_TARGETS, QRY_TARGETS.length, out stmnt);
-        if (err != Sqlite.OK) {
-            critical("Could not parse QRY_TARGETS");
-            return;
+        Json.Node root = HTTPSEverywhere.parser.get_root();
+        if (root.get_node_type() != Json.NodeType.OBJECT) {
+            error("Need an object as the rootnode of rulesets.");
         }
-        string host;
-        int ruleset_id;
-        while (stmnt.step() == Sqlite.ROW) {
-            host = stmnt.column_text(0);
-            ruleset_id = stmnt.column_int(1);
-            targets.set(new Target(host), ruleset_id);
-        }
-    }
+        var rootobj = root.get_object();
 
-    private const string QRY_RULESET = """
-        SELECT contents FROM rulesets WHERE id = $RID;
-    """;
+        if (!rootobj.has_member("targets") ||
+                rootobj.get_member("targets").get_node_type() != Json.NodeType.OBJECT) {
+            error("The root object must have an object with the name 'targets'.");
+        }
+
+        rootobj.get_member("targets").get_object().foreach_member((obj, host, member) => {
+            if (member.get_node_type() != Json.NodeType.ARRAY) {
+                error("Targets must supply their ruleset IDs as arrays of integers.");
+            }
+            var id_list = new Gee.ArrayList<uint>();
+            member.get_array().foreach_element((arr,index,element) => {
+                if (element.get_node_type() != Json.NodeType.VALUE)
+                    error ("RulesetIDs must be supplied as integer values");
+                id_list.add((uint)element.get_int());
+            });
+            targets.set(new Target(host), id_list);
+        });
+    }
 
     /**
      * Loads a ruleset from the database and stores it in the ram cache
      */
-    private void load_ruleset(int ruleset_id) {
-        Sqlite.Statement stmnt;
-        int err = db.prepare_v2(QRY_RULESET, QRY_RULESET.length, out stmnt);
-        if (err != Sqlite.OK) {
-            critical("Could not parse QRY_RULESET");
-            return;
+    private void load_ruleset(uint ruleset_id) {
+        Json.Node root = HTTPSEverywhere.parser.get_root();
+        if (root.get_node_type() != Json.NodeType.OBJECT) {
+            error("Need an object as the rootnode of rulesets.");
         }
-        int id_param_pos = stmnt.bind_parameter_index("$RID");
-        assert (id_param_pos > 0);
-        stmnt.bind_int(id_param_pos, ruleset_id);
-        if (stmnt.step() == Sqlite.ROW) {
-            string ruleset = stmnt.column_text(0);
-            parse_ruleset(ruleset_id, ruleset);
-        } else
-            warning("Could not find ruleset for ID. This indicates that there" +
-                    " is a ruleset missing though it is referenced by a target.");
+        var rootobj = root.get_object();
+
+        if (!rootobj.has_member("rulesetStrings")) {
+            error("The root object must have an array with the name 'rulesetStrings'.");
+        }
+
+        Json.Node arrnode = rootobj.get_member("rulesetStrings");
+        if (arrnode.get_node_type() != Json.NodeType.ARRAY) {
+            error("rulesetStrings must be supplied as array of string");
+        }
+
+        var arr = arrnode.get_array();
+        parse_ruleset(ruleset_id,arr.get_string_element(ruleset_id));
     }
 
     /**
      * Causes a new #Ruleset to be created from the
      * file at @rulepath and to be stored in this libs memory
      */
-    private void parse_ruleset(int id, string ruledata) {
+    private void parse_ruleset(uint id, string ruledata) {
         Xml.Doc* doc = Xml.Parser.parse_doc(ruledata);
         if (doc == null) {
-            warning("Could not parse rule with id %d".printf(id));
+            warning("Could not parse rule with id %u".printf(id));
             return;
         }
 
@@ -201,7 +213,7 @@ namespace HTTPSEverywhere {
             } catch (RulesetError e) {
             }
         } else {
-            warning("No Root element in rule with id %d".printf(id));
+            warning("No Root element in rule with id %u".printf(id));
         }
 
         delete doc;
