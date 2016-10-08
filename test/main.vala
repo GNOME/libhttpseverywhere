@@ -1,9 +1,90 @@
-namespace OParlTest {
-    class Main {
+/********************************************************************
+# Copyright 2016 Daniel 'grindhold' Brendle
+#
+# This file is part of libhttpseverywhere.
+#
+# libhttpseverywhere is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either
+# version 3 of the License, or (at your option) any later
+# version.
+#
+# libhttpseverywhere is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+# PURPOSE. See the GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with libhttpseverywhere.
+# If not, see http://www.gnu.org/licenses/.
+*********************************************************************/
+
+using HTTPSEverywhere;
+
+namespace HTTPSEverywhereTest {
+    class Main : GLib.Object {
         public static int main (string[] args) {
-            stdout.printf("tests not implemented yet!\n");
-            HTTPSEverywhere.init();
+            Test.init(ref args);
+            RulesetTest.add_tests();
+            Test.run();
             return 0;
+        }
+    }
+
+    class RulesetTest : GLib.Object {
+        public static void add_tests () {
+            Test.add_func("/httpseverywhere/ruleset/simple", () => {
+                var from = "^http:";
+                var to   = "https:";
+                var url  = "http://blog.fefe.de";
+
+                var ruleset = new Ruleset();
+                ruleset.add_rule(from, to);
+
+                assert (ruleset.rewrite(url) == "https://blog.fefe.de");
+            });
+
+            Test.add_func("/httpseverywhere/ruleset/1group", () => {
+                var from = "^http://(en|fr)wp\\.org/";
+                var to   = "https://$1.wikipedia.org/wiki/";
+                var url  = "http://enwp.org/Tamale";
+
+                var ruleset = new Ruleset();
+                ruleset.add_rule(from, to);
+
+                assert (ruleset.rewrite(url) == "https://en.wikipedia.org/wiki/Tamale");
+
+                url  = "http://frwp.org/Tamale";
+                assert (ruleset.rewrite(url) == "https://fr.wikipedia.org/wiki/Tamale");
+            });
+
+            Test.add_func("/httpseverywhere/ruleset/optional_subdomain", () => {
+                var from = "^http://(?:www\\.)?filescrunch\\.com/";
+                var to   = "https://filescrunch.com/";
+                var url  = "http://filescrunch.com/nyannyannyannyan";
+
+                var ruleset = new Ruleset();
+                ruleset.add_rule(from, to);
+
+                assert (ruleset.rewrite(url) == "https://filescrunch.com/nyannyannyannyan");
+
+                url  = "http://www.filescrunch.com/nyannyannyannyan";
+                assert (ruleset.rewrite(url) == "https://filescrunch.com/nyannyannyannyan");
+            });
+
+            Test.add_func("/httpseverywhere/ruleset/omitted_replace_fields", () => {
+                var from = "^(http://(www\\.)?|https://)(dl|fsadownload|fsaregistration|ifap|nslds|tcli)\\.ed\\.gov/";
+                var to   = "https://www.$3.ed.gov/";
+                var url  = "http://fsaregistration.ed.gov/";
+
+                var ruleset = new Ruleset();
+                ruleset.add_rule(from, to);
+
+                assert (ruleset.rewrite(url) == "https://www.fsaregistration.ed.gov/");
+
+                url  = "http://www.dl.ed.gov/";
+                assert (ruleset.rewrite(url) == "https://www.dl.ed.gov/");
+            });
         }
     }
 }
