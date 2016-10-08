@@ -94,7 +94,11 @@ namespace HTTPSEverywhere {
                 string o;
                 FileUtils.get_contents(Path.build_filename(UPDATE_DIR, LOCK_NAME), out o);
             } catch (FileError e) {
-                FileUtils.set_contents(Path.build_filename(UPDATE_DIR, LOCK_NAME), "");
+                try {
+                    FileUtils.set_contents(Path.build_filename(UPDATE_DIR, LOCK_NAME), "");
+                } catch (FileError e) {
+                    error("Could not acquire lock at '%s'",Path.build_filename(UPDATE_DIR, LOCK_NAME));
+                }
                 update_in_progress = true;
                 return;
             }
@@ -111,7 +115,9 @@ namespace HTTPSEverywhere {
 
         /**
          * This function initializes an update of the used rulefiles
+         *
          * It will return true on success and false on failure
+         * Remember to reread the rules via {@link HTTPSEverywhere.init}
          */
         public async UpdateResult update() {
             try {
@@ -127,20 +133,29 @@ namespace HTTPSEverywhere {
             // Download the XPI package
             update_state = UpdateState.DOWNLOADING_XPI;
             var msg = new Soup.Message("GET", UPDATE_URL);
-            var stream = session.send(msg, null);
+            InputStream stream = null;
+            try {
+                stream = session.send(msg, null);
+            } catch (Error e) {
+                warning("Could not fetch update from '%s'", UPDATE_URL);
+                return UpdateResult.ERROR;
+            }
             // We expect the packed archive to be ~5 MiB big
             uint8[] output = new uint8[(5*1024*1024)];
-            // TODO: yield error if downloaded file is too big
             size_t size_read;
-            stream.read_all(output, out size_read, null );
+            try {
+                stream.read_all(output, out size_read, null );
+            } catch (IOError e) {
+                warning("Could not read HTTP body");
+                return UpdateResult.ERROR;
+            }
 
             // Decompressing the XPI package
             update_state = UpdateState.DECOMPRESSING_XPI;
 
             Archive.Read zipreader = new Archive.Read();
-            Archive.Write extractor = new Archive.Write();
             zipreader.set_format(Archive.Format.ZIP);
-            var res = zipreader.open_memory(output, size_read);
+            zipreader.open_memory(output, size_read);
 
             string json = "";
             unowned Archive.Entry e = null;
@@ -150,7 +165,8 @@ namespace HTTPSEverywhere {
                     while (true) {
                         var r = zipreader.read_data(jsonblock, 1024*1024);
                         if (r < 0) {
-                            break; //TODO: yield error because reading failed
+                            warning("Failed reading archive stream");
+                            return UpdateResult.ERROR;
                         }
                         if (r < 1024*1024 && r != 0) {
                             // FIXME: will this explode when multibyte unicode chars arrive?
@@ -167,7 +183,12 @@ namespace HTTPSEverywhere {
             // Copying the new Rules-File to the target
             update_state = UpdateState.COPYING_RULES;
             string rulesets_path = Path.build_filename(UPDATE_DIR, rulesets_file);
-            FileUtils.set_contents(rulesets_path, json);
+            try {
+                FileUtils.set_contents(rulesets_path, json);
+            } catch (FileError e) {
+                warning("Could not write rulesets file at '%s'", rulesets_path);
+                return UpdateResult.ERROR;
+            }
 
             update_state = UpdateState.FINISHED;
             unlock_update();
