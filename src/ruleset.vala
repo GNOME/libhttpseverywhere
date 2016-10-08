@@ -207,11 +207,13 @@ namespace HTTPSEverywhere {
                 return url;
             MatchInfo info;
             if (this.from.match(url, 0, out info)) {
+                var suffix = url.replace(info.fetch(0), "");
                 string ret = this.to;
                 if (info.get_match_count() > 1) {
                     for (int i = 1; i < info.get_match_count(); i++) {
                         ret = ret.replace("$%d".printf(i),info.fetch(i));
                     }
+                    ret += suffix;
                 }
                 if (info.get_match_count() == 1) {
                     ret = url.replace(info.fetch(0), this.to);

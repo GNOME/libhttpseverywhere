@@ -49,7 +49,7 @@ namespace HTTPSEverywhere {
      * This class lets the user of this library perform
      * an update of the used rule-files.
      */
-    class Updater : GLib.Object {
+    public class Updater : GLib.Object {
         /**
          * Used to check whether we are already doing an update
          */
