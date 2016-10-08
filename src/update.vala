@@ -104,19 +104,9 @@ namespace HTTPSEverywhere {
         }
 
         /**
-         * This function initializes an update of the used rulefiles
-         *
-         * It will return true on success and false on failure
-         * Remember to reread the rules via {@link HTTPSEverywhere.init}
+         * Actually executes the update
          */
-        public async UpdateResult update() {
-            try {
-                lock_update();
-            } catch (UpdateError e) {
-                warning("Cannot start update: Update already in progress");
-                return UpdateResult.ERROR;
-            }
-
+        private UpdateResult execute_update() {
             var session = new Soup.Session();
 
 
@@ -182,9 +172,27 @@ namespace HTTPSEverywhere {
             }
 
             update_state = UpdateState.FINISHED;
-            unlock_update();
 
             return UpdateResult.SUCCESS;
+        } 
+
+        /**
+         * This function initializes an update of the used rulefiles
+         *
+         * It will return true on success and false on failure
+         * Remember to reread the rules via {@link HTTPSEverywhere.init}
+         */
+        public async UpdateResult update() {
+            try {
+                lock_update();
+            } catch (UpdateError e) {
+                warning("Cannot start update: Update already in progress");
+                return UpdateResult.ERROR;
+            }
+
+            var result = execute_update();
+            unlock_update();
+            return result;
         }
     }
 }
