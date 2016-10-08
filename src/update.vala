@@ -159,8 +159,9 @@ namespace HTTPSEverywhere {
                             return UpdateResult.ERROR;
                         }
                         if (r < 1024*1024 && r != 0) {
-                            // FIXME: will this explode when multibyte unicode chars arrive?
-                            json += ((string)jsonblock).slice(0,r);
+                            uint8[] remainder = new uint8[r];
+                            Memory.copy(remainder, jsonblock, r);
+                            json += (string)remainder;
                             break;
                         }
                         json += (string)jsonblock;
