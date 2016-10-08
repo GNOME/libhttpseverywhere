@@ -43,13 +43,23 @@ namespace HTTPSEverywhere {
         ERROR
     }
 
-    private errordomain UpdateError {IN_PROGRESS}
+    private errordomain UpdateError {
+        IN_PROGRESS // Update is already in progress
+    }
 
     /**
      * This class lets the user of this library perform
      * an update of the used rule-files.
      */
     public class Updater : GLib.Object {
+        /**
+         * Constants
+         */
+        private static  string UPDATE_DIR = Path.build_filename(Environment.get_user_data_dir(),
+                                                              "libhttpseverywhere");
+        private static const string UPDATE_URL = "https://www.eff.org/files/https-everywhere-latest.xpi";
+        private static const string LOCK_NAME = "lock";
+
         /**
          * Used to check whether we are already doing an update
          */
@@ -80,15 +90,22 @@ namespace HTTPSEverywhere {
          * of this library from doing updates
          */
         private void lock_update() throws UpdateError {
-            // TODO: write file
-            update_in_progress = true;
+            try {
+                string o;
+                FileUtils.get_contents(Path.build_filename(UPDATE_DIR, LOCK_NAME), out o);
+            } catch (FileError e) {
+                FileUtils.set_contents(Path.build_filename(UPDATE_DIR, LOCK_NAME), "");
+                update_in_progress = true;
+                return;
+            }
+            throw new UpdateError.IN_PROGRESS("Update is already in progress");
         }
 
         /**
          * Removes the update lock
          */
         private void unlock_update() {
-            // TODO: delete file
+            FileUtils.unlink(Path.build_filename(UPDATE_DIR, LOCK_NAME));
             update_in_progress = false;
         }
 
@@ -101,6 +118,7 @@ namespace HTTPSEverywhere {
                 lock_update();
             } catch (UpdateError e) {
                 warning("Cannot start update: Update already in progress");
+                return UpdateResult.ERROR;
             }
 
             var session = new Soup.Session();
@@ -108,7 +126,7 @@ namespace HTTPSEverywhere {
 
             // Download the XPI package
             update_state = UpdateState.DOWNLOADING_XPI;
-            var msg = new Soup.Message("GET", "https://www.eff.org/files/https-everywhere-latest.xpi");
+            var msg = new Soup.Message("GET", UPDATE_URL);
             var stream = session.send(msg, null);
             // We expect the packed archive to be ~5 MiB big
             uint8[] output = new uint8[(5*1024*1024)];
@@ -148,8 +166,7 @@ namespace HTTPSEverywhere {
 
             // Copying the new Rules-File to the target
             update_state = UpdateState.COPYING_RULES;
-            string rulesets_path = Path.build_filename(Environment.get_user_data_dir(),
-                                          "libhttpseverywhere", rulesets_file);
+            string rulesets_path = Path.build_filename(UPDATE_DIR, rulesets_file);
             FileUtils.set_contents(rulesets_path, json);
 
             update_state = UpdateState.FINISHED;
