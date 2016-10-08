@@ -65,7 +65,6 @@ namespace HTTPSEverywhere {
          */
         private bool update_in_progress = false;
         private UpdateState _update_state = UpdateState.FINISHED;
-        private uint _update_percentage = 100;
 
         /**
          * Represents the currently processed state of the update
@@ -74,15 +73,6 @@ namespace HTTPSEverywhere {
         public UpdateState update_state {
             public get {return this._update_state;}
             private set {this._update_state = value;}
-        }
-
-        /**
-         * Represents the estimated progress of the update in percent.
-         * When no update is running, this property is of no use.
-         */
-        public uint update_percentage {
-            public get {return this._update_percentage;}
-            private set {this._update_percentage = value;}
         }
 
         /**
