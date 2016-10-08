@@ -16,7 +16,7 @@ that you can use the lib in many popular languages like e.g. Ruby, Python or Jav
 Current Status
 --------------
 
-There are still problems with complexer regexes, but I will fix them ASAP.
+First release coming soon!
 
 Dependencies
 ------------
