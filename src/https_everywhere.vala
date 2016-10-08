@@ -28,6 +28,10 @@ namespace HTTPSEverywhere {
     private Gee.HashMap<Target, Gee.ArrayList<uint>> targets;
     private Gee.HashMap<uint, Ruleset> rulesets;
 
+    /**
+     * Different states that express what a rewrite process did to
+     * a URL
+     */
     public enum RewriteResult {
         /**
          * The URL has successfully been rewritten to HTTPS
