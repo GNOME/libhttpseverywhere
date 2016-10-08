@@ -59,6 +59,7 @@ namespace HTTPSEverywhere {
                                                               "libhttpseverywhere");
         private static const string UPDATE_URL = "https://www.eff.org/files/https-everywhere-latest.xpi";
         private static const string LOCK_NAME = "lock";
+        private static const string ETAG_NAME = "etag";
 
         /**
          * Used to check whether we are already doing an update
@@ -109,6 +110,22 @@ namespace HTTPSEverywhere {
         private UpdateResult execute_update() {
             var session = new Soup.Session();
 
+            // Check if update is necessary
+            try {
+                string etag;
+                FileUtils.get_contents(Path.build_filename(UPDATE_DIR, ETAG_NAME), out etag);
+                var msg = new Soup.Message("HEAD", UPDATE_URL);
+                try {
+                    session.send(msg, null);
+                    if (msg.response_headers.@get("Etag") == etag) {
+                        info("No update available");
+                        return UpdateResult.NO_UPDATE_AVAILABLE;
+                    }
+                } catch (Error e) {
+                    warning("Could request update from '%s'", UPDATE_URL);
+                    return UpdateResult.ERROR;
+                }
+            } catch (FileError e) {}
 
             // Download the XPI package
             update_state = UpdateState.DOWNLOADING_XPI;
@@ -168,6 +185,15 @@ namespace HTTPSEverywhere {
                 FileUtils.set_contents(rulesets_path, json);
             } catch (FileError e) {
                 warning("Could not write rulesets file at '%s'", rulesets_path);
+                return UpdateResult.ERROR;
+            }
+
+            // Write Etag of update to disk
+            string etag = msg.response_headers.@get("Etag");
+            try {
+                FileUtils.set_contents(Path.build_filename(UPDATE_DIR, ETAG_NAME), etag);
+            } catch (FileError e) {
+                warning("Could not write etag file at '%s'",Path.build_filename(UPDATE_DIR, ETAG_NAME));
                 return UpdateResult.ERROR;
             }
 
