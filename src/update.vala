@@ -28,7 +28,7 @@ namespace HTTPSEverywhere {
      */
     public enum UpdateState {
         FINISHED,
-        LOADING_RDF,
+        CHECKING_AVAILABILITY,
         DOWNLOADING_XPI,
         DECOMPRESSING_XPI,
         COPYING_RULES
@@ -111,6 +111,7 @@ namespace HTTPSEverywhere {
             var session = new Soup.Session();
 
             // Check if update is necessary
+            update_state = UpdateState.CHECKING_AVAILABILITY;
             try {
                 string etag;
                 FileUtils.get_contents(Path.build_filename(UPDATE_DIR, ETAG_NAME), out etag);
