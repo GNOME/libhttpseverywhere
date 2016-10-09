@@ -53,7 +53,7 @@ httpseverywhere_lib = library('httpseverywhere-'+api, httpseverywhere_lib_source
 
 httpseverywhere_test = executable('httpseverywhere_test', httpseverywhere_test_source,
                                   dependencies: [glib, gobject, gio, gee, libxml],
-                                  include_directories: include_directories('httpseverywhere-'+api),
+                                  include_directories: include_directories('@0@/httpseverywhere-@1@'.format(meson.current_build_dir(), api)),
                                   link_with: httpseverywhere_lib)
 
 g_ir_compiler = find_program('g-ir-compiler')
