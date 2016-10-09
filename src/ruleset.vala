@@ -156,7 +156,6 @@ namespace HTTPSEverywhere {
         public string rewrite(string url) {
             // Skip if this rule is inactive
             if (this.default_off){
-                info("The rule %s is deactivated".printf(this.name));
                 return url;
             }
 
