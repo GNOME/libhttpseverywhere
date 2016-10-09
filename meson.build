@@ -44,9 +44,11 @@ httpseverywhere_test_source = [
     'test/main.vala'
 ]
 
+run_command ('mkdir', meson.current_build_dir()+'/httpseverywhere-'+api)
+
 httpseverywhere_lib = library('httpseverywhere-'+api, httpseverywhere_lib_source,
                               dependencies: [glib, gobject, json_glib, libxml, soup, gio, gee, archive],
-                              vala_args: ['--gir=' + '../HTTPSEverywhere-'+api+'.gir'],
+                              vala_args: ['--gir=' + '../HTTPSEverywhere-'+api+'.gir', '-H', 'httpseverywhere-'+api+'/httpseverywhere.h'],
                               install: true)
 
 httpseverywhere_test = executable('httpseverywhere_test', httpseverywhere_test_source,
@@ -78,7 +80,7 @@ pkgconfig.generate(libraries : httpseverywhere_lib,
               description : 'A library to rewrite HTTP URLs to HTTPS URLs.',
               install: true)
 
-install_headers(meson.current_build_dir()+'/httpseverywhere-'+api+'.h')
+install_headers(meson.current_build_dir()+'/httpseverywhere-'+api+'/httpseverywhere.h', subdir: 'httpseverywhere-0.2')
 install_subdir(meson.current_build_dir()+'/devhelp/httpseverywhere-'+api+'/httpseverywhere-'+api, install_dir: get_option('datadir')+'/devhelp/books')
 install_data('httpseverywhere-'+api+'.deps', install_dir: get_option('datadir') + '/vala/vapi')
 install_data(meson.current_build_dir()+'/httpseverywhere-'+api+'.vapi', install_dir: get_option('datadir') + '/vala/vapi')
