@@ -105,8 +105,11 @@ namespace HTTPSEverywhere {
             critical("HTTPSEverywhere was not initialized");
             return url;
         }
-        if (!url.has_suffix("/"))
-            url += "/";
+        if (!url.has_suffix("/")) {
+            var rep = url.replace("/","");
+            if (url.length - rep.length <= 2)
+                url += "/";
+        }
         Ruleset? rs = null;
         foreach (Target target in targets.keys) {
             if (target.matches(url)) {
