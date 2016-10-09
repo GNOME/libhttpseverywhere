@@ -1,0 +1,5 @@
+This is an empty directory!
+
+This empty directory exists because meson does not allow adding include paths to
+a directory under the build directory unless the same directory exists in the
+source directory. That's pretty strange, right?
