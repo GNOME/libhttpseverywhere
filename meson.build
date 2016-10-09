@@ -77,6 +77,7 @@ pkgconfig.generate(libraries : httpseverywhere_lib,
               name : 'libhttpseverywhere',
               filebase : meson.current_build_dir()+'/httpseverywhere-'+api,
               requires : 'glib-2.0 gobject-2.0 gio-2.0 json-glib-1.0 libxml-2.0 libsoup-2.4 gee-0.8 libarchive',
+              subdirs: 'httpseverywhere-'+api,
               description : 'A library to rewrite HTTP URLs to HTTPS URLs.',
               install: true)
 
