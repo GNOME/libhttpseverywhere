@@ -35,16 +35,15 @@ namespace HTTPSEverywhere {
     }
 
     /**
-     * This enumerates possible results of an update
+     * Errors that may occur during an update process
      */
-    public enum UpdateResult {
-        SUCCESS,
+    public errordomain UpdateError {
+        IN_PROGRESS, // Update is already in progress
         NO_UPDATE_AVAILABLE,
-        ERROR
-    }
-
-    private errordomain UpdateError {
-        IN_PROGRESS // Update is already in progress
+        CANT_REACH_SERVER,
+        CANT_READ_HTTP_BODY,
+        CANT_READ_FROM_ARCHIVE,
+        WRITE_FAILED
     }
 
     /**
@@ -107,7 +106,7 @@ namespace HTTPSEverywhere {
         /**
          * Actually executes the update
          */
-        private UpdateResult execute_update() {
+        private void execute_update() throws UpdateError {
             var session = new Soup.Session();
 
             // Check if update is necessary
@@ -119,12 +118,10 @@ namespace HTTPSEverywhere {
                 try {
                     session.send(msg, null);
                     if (msg.response_headers.@get("Etag") == etag) {
-                        info("No update available");
-                        return UpdateResult.NO_UPDATE_AVAILABLE;
+                        throw new UpdateError.NO_UPDATE_AVAILABLE("Already the freshest version!");
                     }
                 } catch (Error e) {
-                    warning("Could request update from '%s'", UPDATE_URL);
-                    return UpdateResult.ERROR;
+                    throw new UpdateError.CANT_REACH_SERVER("Could request update from '%s'", UPDATE_URL);
                 }
             } catch (FileError e) {}
 
@@ -135,8 +132,7 @@ namespace HTTPSEverywhere {
             try {
                 stream = session.send(msg, null);
             } catch (Error e) {
-                warning("Could not fetch update from '%s'", UPDATE_URL);
-                return UpdateResult.ERROR;
+                throw new UpdateError.CANT_REACH_SERVER("Could request update from '%s'", UPDATE_URL);
             }
             // We expect the packed archive to be ~5 MiB big
             uint8[] output = new uint8[(5*1024*1024)];
@@ -144,8 +140,7 @@ namespace HTTPSEverywhere {
             try {
                 stream.read_all(output, out size_read, null );
             } catch (IOError e) {
-                warning("Could not read HTTP body");
-                return UpdateResult.ERROR;
+                throw new UpdateError.CANT_READ_HTTP_BODY(e.message);
             }
 
             // Decompressing the XPI package
@@ -163,8 +158,7 @@ namespace HTTPSEverywhere {
                     while (true) {
                         var r = zipreader.read_data(jsonblock, 1024*1024);
                         if (r < 0) {
-                            warning("Failed reading archive stream");
-                            return UpdateResult.ERROR;
+                            throw new UpdateError.CANT_READ_FROM_ARCHIVE("Failed reading archive stream");
                         }
                         if (r < 1024*1024 && r != 0) {
                             uint8[] remainder = new uint8[r];
@@ -185,22 +179,19 @@ namespace HTTPSEverywhere {
             try {
                 FileUtils.set_contents(rulesets_path, json);
             } catch (FileError e) {
-                warning("Could not write rulesets file at '%s'", rulesets_path);
-                return UpdateResult.ERROR;
+                throw new UpdateError.WRITE_FAILED("Could not write rulesets file at '%s'".printf(rulesets_path));
             }
 
             // Write Etag of update to disk
             string etag = msg.response_headers.@get("Etag");
+            string etag_path = Path.build_filename(UPDATE_DIR, ETAG_NAME);
             try {
-                FileUtils.set_contents(Path.build_filename(UPDATE_DIR, ETAG_NAME), etag);
+                FileUtils.set_contents(etag_path, etag);
             } catch (FileError e) {
-                warning("Could not write etag file at '%s'",Path.build_filename(UPDATE_DIR, ETAG_NAME));
-                return UpdateResult.ERROR;
+                throw new UpdateError.WRITE_FAILED("Could not write etag file at '%s'".printf(etag_path));
             }
 
             update_state = UpdateState.FINISHED;
-
-            return UpdateResult.SUCCESS;
         } 
 
         /**
@@ -209,20 +200,16 @@ namespace HTTPSEverywhere {
          * If the update succeeded, it will reload the rulesets.
          * It will return true on success and false on failure
          */
-        public async UpdateResult update() {
+        public async void update() throws UpdateError {
+            lock_update();
             try {
-                lock_update();
-            } catch (UpdateError e) {
-                warning("Cannot start update: Update already in progress");
-                return UpdateResult.ERROR;
-            }
-
-            var result = execute_update();
-            if (result == UpdateResult.SUCCESS)
+                execute_update();
                 HTTPSEverywhere.init();
-
-            unlock_update();
-            return result;
+                unlock_update();
+            } catch (UpdateError e) {
+                unlock_update();
+                throw e;
+            }
         }
     }
 }
