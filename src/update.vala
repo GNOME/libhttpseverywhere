@@ -206,8 +206,8 @@ namespace HTTPSEverywhere {
         /**
          * This function initializes an update of the used rulefiles
          *
+         * If the update succeeded, it will reload the rulesets.
          * It will return true on success and false on failure
-         * Remember to reread the rules via {@link HTTPSEverywhere.init}
          */
         public async UpdateResult update() {
             try {
@@ -218,6 +218,9 @@ namespace HTTPSEverywhere {
             }
 
             var result = execute_update();
+            if (result == UpdateResult.SUCCESS)
+                HTTPSEverywhere.init();
+
             unlock_update();
             return result;
         }
