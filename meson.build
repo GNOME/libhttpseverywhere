@@ -19,7 +19,7 @@
 # If not, see http://www.gnu.org/licenses/.
 #*********************************************************************
 
-project ('httpseverywhere', ['vala','c'])
+project ('httpseverywhere', 'vala','c')
 
 pkgconfig = import('pkgconfig')
 
