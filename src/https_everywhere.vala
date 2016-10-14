@@ -28,6 +28,9 @@ namespace HTTPSEverywhere {
     private Gee.HashMap<Target, Gee.ArrayList<uint>> targets;
     private Gee.HashMap<uint, Ruleset> rulesets;
 
+	private Mutex Init_Mutex;
+	private Cond Init_Condition;
+
     /**
      * Different states that express what a rewrite process did to
      * a URL
@@ -53,6 +56,10 @@ namespace HTTPSEverywhere {
      * the rulesets from the filesystem.
      */
     public void init() {
+		Init_Mutex.lock();
+        initialized = false;
+		Init_Mutex.unlock();
+
         targets = new Gee.HashMap<Target,Gee.ArrayList<uint>>();
         rulesets = new Gee.HashMap<int, Ruleset>();
 
@@ -84,7 +91,10 @@ namespace HTTPSEverywhere {
         }
 
         load_targets();
+		Init_Mutex.lock();
         initialized = true;
+		Init_Mutex.unlock();
+		Init_Condition.broadcast();
     }
 
     /**
@@ -99,11 +109,15 @@ namespace HTTPSEverywhere {
      * Takes an @url and returns the appropriate
      * HTTPS-enabled counterpart if there is any
      */
-    public string rewrite(string p_url) {
+    public async string rewrite(string p_url) {
         string url = p_url;
         if (!initialized){
-            critical("HTTPSEverywhere was not initialized");
-            return url;
+			Init_Mutex.lock();
+			if (!initialized) {
+				Init_Condition.wait(Init_Mutex);
+			} else {
+				Init_Mutex.unlock();
+			}
         }
         if (url.has_prefix("http://") && !url.has_suffix("/")) {
             var rep = url.replace("/","");
