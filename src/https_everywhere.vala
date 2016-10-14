@@ -56,6 +56,10 @@ namespace HTTPSEverywhere {
      * the rulesets from the filesystem.
      */
     public void init() {
+		Init_Mutex.lock();
+        initialized = false;
+		Init_Mutex.unlock();
+
         targets = new Gee.HashMap<Target,Gee.ArrayList<uint>>();
         rulesets = new Gee.HashMap<int, Ruleset>();
 
@@ -87,7 +91,9 @@ namespace HTTPSEverywhere {
         }
 
         load_targets();
+		Init_Mutex.lock();
         initialized = true;
+		Init_Mutex.unlock();
 		Init_Condition.broadcast();
     }
 
