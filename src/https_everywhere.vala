@@ -109,7 +109,7 @@ namespace HTTPSEverywhere {
      * Takes an @url and returns the appropriate
      * HTTPS-enabled counterpart if there is any
      */
-    public async string rewrite(string p_url) {
+    public string rewrite(string p_url) {
         string url = p_url;
         if (!initialized){
 			Init_Mutex.lock();
