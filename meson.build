@@ -35,7 +35,7 @@ gee = dependency('gee-0.8')
 archive = dependency('libarchive')
 
 httpseverywhere_lib_source = [
-    'src/https_everywhere.vala',
+    'src/context.vala',
     'src/ruleset.vala',
     'src/update.vala'
 ]

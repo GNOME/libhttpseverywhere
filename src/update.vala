@@ -66,6 +66,8 @@ namespace HTTPSEverywhere {
         private bool update_in_progress = false;
         private UpdateState _update_state = UpdateState.FINISHED;
 
+        private Context context;
+
         /**
          * Represents the currently processed state of the update
          * process. When no update is running, this property is of no use.
@@ -73,6 +75,13 @@ namespace HTTPSEverywhere {
         public UpdateState update_state {
             public get {return this._update_state;}
             private set {this._update_state = value;}
+        }
+
+        /**
+         * Create a new Updater for the given library context.
+         */
+        public Updater(Context context) {
+            this.context = context;
         }
 
         /**
@@ -204,7 +213,7 @@ namespace HTTPSEverywhere {
             lock_update();
             try {
                 execute_update();
-                HTTPSEverywhere.init();
+                context.init();
                 unlock_update();
             } catch (UpdateError e) {
                 unlock_update();

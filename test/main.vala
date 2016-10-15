@@ -22,16 +22,87 @@
 using HTTPSEverywhere;
 
 namespace HTTPSEverywhereTest {
-    class Main : GLib.Object {
+    class Main {
         public static int main (string[] args) {
             Test.init(ref args);
+            ContextTest.add_tests();
             RulesetTest.add_tests();
             Test.run();
             return 0;
         }
     }
 
-    class RulesetTest : GLib.Object {
+    class ContextTest {
+        /* Note that Context tests do not check if a particular URI has been
+         * rewritten, because we don't want the tests to be dependent on
+         * changing rulesets.
+         */
+        public static void add_tests () {
+            Test.add_func("/httpseverywhere/context/rewrite_sync", () => {
+                var context = new Context();
+                context.init();
+
+                var result = context.rewrite_sync("http://example.com");
+                assert(result == "http://example.com/" || result == "https://example.com/");
+            });
+
+            /* This is a programmer error. The test should emit a critical. */
+            Test.add_func("/httpseverywhere/context/rewrite_before_init_sync", () => {
+                if (Test.subprocess()) {
+                    new Context().rewrite_sync("http://example.com");
+                }
+
+                Test.trap_subprocess(null, 0, 0);
+                Test.trap_assert_failed();
+                Test.trap_assert_stderr("*CRITICAL*");
+            });
+
+            Test.add_func("/httpseverywhere/context/rewrite_async", () => {
+                var loop = new MainLoop();
+                var context = new Context();
+                context.init();
+                context.rewrite.begin("http://example.com", (obj, res) => {
+                    var result = context.rewrite.end(res);
+                    assert(result == "http://example.com/" || result == "https://example.com/");
+                    loop.quit();
+                });
+                loop.run();
+            });
+
+            /* Ensure that no calls to rewrite complete before init is called,
+             * and that all calls do complete after init is called.
+             */
+            Test.add_func("/httpseverywhere/context/rewrite_before_init_async", () => {
+                var loop = new MainLoop();
+                var context = new Context();
+                var count = 0;
+
+                context.rewrite.begin("http://example.com", (obj, res) => {
+                    var result = context.rewrite.end(res);
+                    assert(result == "http://example.com/" || result == "https://example.com/");
+                    count++;
+                });
+
+                context.rewrite.begin("http://example.com", (obj, res) => {
+                    var result = context.rewrite.end(res);
+                    assert(result == "http://example.com/" || result == "https://example.com/");
+                    count++;
+                    loop.quit();
+                });
+
+                Idle.add(() => {
+                    assert(count == 0);
+                    context.init();
+                    return Source.REMOVE;
+                });
+
+                loop.run();
+                assert(count == 2);
+            });
+        }
+    }
+
+    class RulesetTest {
         public static void add_tests () {
             Test.add_func("/httpseverywhere/ruleset/simple", () => {
                 var from = "^http:";
