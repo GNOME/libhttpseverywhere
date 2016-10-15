@@ -90,18 +90,14 @@ namespace HTTPSEverywhere {
          */
         private void lock_update() throws UpdateError {
             try {
-                string o;
-                FileUtils.get_contents(Path.build_filename(UPDATE_DIR, LOCK_NAME), out o);
-            } catch (FileError e) {
-                try {
-                    FileUtils.set_contents(Path.build_filename(UPDATE_DIR, LOCK_NAME), "");
-                } catch (FileError e) {
-                    error("Could not acquire lock at '%s'",Path.build_filename(UPDATE_DIR, LOCK_NAME));
-                }
+                var file = File.new_for_path(Path.build_filename(UPDATE_DIR, LOCK_NAME));
+                file.create(FileCreateFlags.NONE);
                 update_in_progress = true;
-                return;
+            } catch (Error e) {
+                if (e is FileError.EXIST)
+                    throw new UpdateError.IN_PROGRESS("Update is already in progress");
+                throw new UpdateError.WRITE_FAILED("Error creating lock file: %s".printf(e.message));
             }
-            throw new UpdateError.IN_PROGRESS("Update is already in progress");
         }
 
         /**
@@ -126,7 +122,7 @@ namespace HTTPSEverywhere {
                 var msg = new Soup.Message("HEAD", UPDATE_URL);
                 try {
                     session.send(msg, null);
-                    if (msg.response_headers.@get("Etag") == etag) {
+                    if (msg.response_headers.get_one("Etag") == etag) {
                         throw new UpdateError.NO_UPDATE_AVAILABLE("Already the freshest version!");
                     }
                 } catch (Error e) {
@@ -192,7 +188,7 @@ namespace HTTPSEverywhere {
             }
 
             // Write Etag of update to disk
-            string etag = msg.response_headers.@get("Etag");
+            string etag = msg.response_headers.get_one("Etag");
             string etag_path = Path.build_filename(UPDATE_DIR, ETAG_NAME);
             try {
                 FileUtils.set_contents(etag_path, etag);
