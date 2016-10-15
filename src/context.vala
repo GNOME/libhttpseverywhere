@@ -76,6 +76,7 @@ namespace HTTPSEverywhere {
          * Create a new library context object.
          */
         public Context() {
+            init_complete_callbacks = new Gee.ArrayQueue<InitCompleteCallback>();
         }
 
         private void execute_init_complete_callbacks() {
