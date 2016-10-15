@@ -38,6 +38,25 @@ namespace HTTPSEverywhereTest {
          * changing rulesets.
          */
         public static void add_tests () {
+            Test.add_func("/httpseverywhere/context/rewrite_sync", () => {
+                var context = new Context();
+                context.init();
+
+                var result = context.rewrite_sync("http://example.com");
+                assert(result == "http://example.com/" || result == "https://example.com/");
+            });
+
+            /* This is a programmer error. The test should emit a critical. */
+            Test.add_func("/httpseverywhere/context/rewrite_before_init_sync", () => {
+                if (Test.subprocess()) {
+                    new Context().rewrite_sync("http://example.com");
+                }
+
+                Test.trap_subprocess(null, 0, 0);
+                Test.trap_assert_failed();
+                Test.trap_assert_stderr("*CRITICAL*");
+            });
+
             Test.add_func("/httpseverywhere/context/rewrite_async", () => {
                 var loop = new MainLoop();
                 var context = new Context();
@@ -53,7 +72,7 @@ namespace HTTPSEverywhereTest {
             /* Ensure that no calls to rewrite complete before init is called,
              * and that all calls do complete after init is called.
              */
-            Test.add_func("/httpseverywhere/context/rewrite_before_init", () => {
+            Test.add_func("/httpseverywhere/context/rewrite_before_init_async", () => {
                 var loop = new MainLoop();
                 var context = new Context();
                 var count = 0;

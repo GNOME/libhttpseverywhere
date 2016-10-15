@@ -136,7 +136,7 @@ namespace HTTPSEverywhere {
         }
 
         /**
-         * Takes an @url and returns the appropriate
+         * Takes a @url and returns the appropriate
          * HTTPS-enabled counterpart if there is any
          */
         public async string rewrite(string p_url) {
@@ -178,6 +178,30 @@ namespace HTTPSEverywhere {
                     last_rewrite_state = RewriteResult.OK;
                 return rs.rewrite(rurl);
             }
+        }
+
+        /**
+         * Takes a @url and returns the appropriate
+         * HTTPS-enabled counterpart if there is any.
+         * May block for a relatively long time. It is
+         * a programmer error to call this before init().
+         */
+        public string rewrite_sync(string p_url) {
+            var main_loop = new MainLoop ();
+            var result = "";
+
+            if (!initialized) {
+                critical("HTTPSEverywhere was not initialized");
+                return "";
+            }
+
+            rewrite.begin (p_url, (obj, res) => {
+                result = rewrite.end (res);
+                main_loop.quit ();
+            });
+            main_loop.run ();
+
+            return result;
         }
 
         /**
