@@ -28,6 +28,23 @@ namespace HTTPSEverywhere {
     private Gee.HashMap<Target, Gee.ArrayList<uint>> targets;
     private Gee.HashMap<uint, Ruleset> rulesets;
 
+    /* This class is a workaround to allow using a delegate with a target as a
+     * generic. This is horrible, but it's easier than fixing Vala.
+     */
+    private class InitCompleteCallback {
+        public delegate void Callback();
+
+        public InitCompleteCallback(Callback callback) {
+            this.callback = () => {
+                callback();
+            };
+        }
+
+        public Callback callback;
+    }
+
+    private Gee.Queue<InitCompleteCallback> init_complete_callbacks;
+
     /**
      * Different states that express what a rewrite process did to
      * a URL
@@ -46,6 +63,11 @@ namespace HTTPSEverywhere {
          * There is no ruleset for the given host
          */
         NO_RULESET
+    }
+
+    private void execute_init_complete_callbacks() {
+        while (!init_complete_callbacks.is_empty)
+            init_complete_callbacks.poll().callback();
     }
 
     /**
@@ -82,11 +104,13 @@ namespace HTTPSEverywhere {
                 locations += "%s\n".printf(location);
             critical("Could not find any suitable database in the following locations:%s",
                      locations);
+            execute_init_complete_callbacks();
             return;
         }
 
         load_targets();
         initialized = true;
+        execute_init_complete_callbacks();
     }
 
     /**
@@ -102,11 +126,12 @@ namespace HTTPSEverywhere {
      * HTTPS-enabled counterpart if there is any
      */
     public async string rewrite(string p_url) {
-        SourceFunc callback = rewrite.callback;
         string url = p_url;
 
-        while (!initialized) {
-            Timeout.add(100, callback);
+        if (!initialized) {
+            init_complete_callbacks.offer(new InitCompleteCallback(() => {
+                rewrite.callback();
+            }));
             yield;
         };
 
