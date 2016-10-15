@@ -49,6 +49,37 @@ namespace HTTPSEverywhereTest {
                 });
                 loop.run();
             });
+
+            /* Ensure that no calls to rewrite complete before init is called,
+             * and that all calls do complete after init is called.
+             */
+            Test.add_func("/httpseverywhere/context/rewrite_before_init", () => {
+                var loop = new MainLoop();
+                var context = new Context();
+                var count = 0;
+
+                context.rewrite.begin("http://example.com", (obj, res) => {
+                    var result = context.rewrite.end(res);
+                    assert(result == "http://example.com/" || result == "https://example.com/");
+                    count++;
+                });
+
+                context.rewrite.begin("http://example.com", (obj, res) => {
+                    var result = context.rewrite.end(res);
+                    assert(result == "http://example.com/" || result == "https://example.com/");
+                    count++;
+                    loop.quit();
+                });
+
+                Idle.add(() => {
+                    assert(count == 0);
+                    context.init();
+                    return Source.REMOVE;
+                });
+
+                loop.run();
+                assert(count == 2);
+            });
         }
     }
 
