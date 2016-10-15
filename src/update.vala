@@ -113,7 +113,7 @@ namespace HTTPSEverywhere {
                 var msg = new Soup.Message("HEAD", UPDATE_URL);
                 try {
                     session.send(msg, null);
-                    if (msg.response_headers.@get("Etag") == etag) {
+                    if (msg.response_headers.get_one("Etag") == etag) {
                         throw new UpdateError.NO_UPDATE_AVAILABLE("Already the freshest version!");
                     }
                 } catch (Error e) {
@@ -179,7 +179,7 @@ namespace HTTPSEverywhere {
             }
 
             // Write Etag of update to disk
-            string etag = msg.response_headers.@get("Etag");
+            string etag = msg.response_headers.get_one("Etag");
             string etag_path = Path.build_filename(UPDATE_DIR, ETAG_NAME);
             try {
                 FileUtils.set_contents(etag_path, etag);
