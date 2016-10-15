@@ -81,18 +81,14 @@ namespace HTTPSEverywhere {
          */
         private void lock_update() throws UpdateError {
             try {
-                string o;
-                FileUtils.get_contents(Path.build_filename(UPDATE_DIR, LOCK_NAME), out o);
-            } catch (FileError e) {
-                try {
-                    FileUtils.set_contents(Path.build_filename(UPDATE_DIR, LOCK_NAME), "");
-                } catch (FileError e) {
-                    error("Could not acquire lock at '%s'",Path.build_filename(UPDATE_DIR, LOCK_NAME));
-                }
+                var file = File.new_for_path(Path.build_filename(UPDATE_DIR, LOCK_NAME));
+                file.create(FileCreateFlags.NONE);
                 update_in_progress = true;
-                return;
+            } catch (Error e) {
+                if (e is FileError.EXIST)
+                    throw new UpdateError.IN_PROGRESS("Update is already in progress");
+                throw new UpdateError.WRITE_FAILED("Error creating lock file: %s".printf(e.message));
             }
-            throw new UpdateError.IN_PROGRESS("Update is already in progress");
         }
 
         /**
