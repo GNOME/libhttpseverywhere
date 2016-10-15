@@ -22,7 +22,7 @@
 using HTTPSEverywhere;
 
 namespace HTTPSEverywhereTest {
-    class Main : GLib.Object {
+    class Main {
         public static int main (string[] args) {
             Test.init(ref args);
             RulesetTest.add_tests();
@@ -31,7 +31,7 @@ namespace HTTPSEverywhereTest {
         }
     }
 
-    class RulesetTest : GLib.Object {
+    class RulesetTest {
         public static void add_tests () {
             Test.add_func("/httpseverywhere/ruleset/simple", () => {
                 var from = "^http:";
