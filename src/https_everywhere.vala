@@ -102,13 +102,13 @@ namespace HTTPSEverywhere {
      * HTTPS-enabled counterpart if there is any
      */
     public async string rewrite(string p_url) {
-		SourceFunc callback = rewrite.callback;
+        SourceFunc callback = rewrite.callback;
         string url = p_url;
 
-		while (!initialized) {
-			Timeout.add(100, callback);
-			yield;
-		};
+        while (!initialized) {
+            Timeout.add(100, callback);
+            yield;
+        };
 
         if (url.has_prefix("http://") && !url.has_suffix("/")) {
             var rep = url.replace("/","");
