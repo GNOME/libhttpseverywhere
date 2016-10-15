@@ -128,6 +128,9 @@ namespace HTTPSEverywhere {
     public async string rewrite(string p_url) {
         string url = p_url;
 
+        if (!url.has_prefix("http://"))
+            return url;
+
         if (!initialized) {
             init_complete_callbacks.offer(new InitCompleteCallback(() => {
                 rewrite.callback();
