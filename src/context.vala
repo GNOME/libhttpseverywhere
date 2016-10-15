@@ -187,7 +187,7 @@ namespace HTTPSEverywhere {
          * a programmer error to call this before init().
          */
         public string rewrite_sync(string p_url) {
-            var main_loop = new MainLoop ();
+            var main_loop = new MainLoop();
             var result = "";
 
             if (!initialized) {
@@ -196,10 +196,10 @@ namespace HTTPSEverywhere {
             }
 
             rewrite.begin (p_url, (obj, res) => {
-                result = rewrite.end (res);
-                main_loop.quit ();
+                result = rewrite.end(res);
+                main_loop.quit();
             });
-            main_loop.run ();
+            main_loop.run();
 
             return result;
         }
