@@ -195,7 +195,7 @@ namespace HTTPSEverywhere {
                 return "";
             }
 
-            rewrite.begin (p_url, (obj, res) => {
+            rewrite.begin(p_url, (obj, res) => {
                 result = rewrite.end(res);
                 main_loop.quit();
             });
