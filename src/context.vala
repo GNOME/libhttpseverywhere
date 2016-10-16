@@ -136,7 +136,7 @@ namespace HTTPSEverywhere {
         }
 
         /**
-         * Takes a @url and returns the appropriate
+         * Takes a url and returns the appropriate
          * HTTPS-enabled counterpart if there is any
          */
         public async string rewrite(string p_url) {
@@ -181,7 +181,7 @@ namespace HTTPSEverywhere {
         }
 
         /**
-         * Takes a @url and returns the appropriate
+         * Takes a url and returns the appropriate
          * HTTPS-enabled counterpart if there is any.
          * May block for a relatively long time. It is
          * a programmer error to call this before init().
@@ -205,7 +205,7 @@ namespace HTTPSEverywhere {
         }
 
         /**
-         * Returns true when there is a #Ruleset for the
+         * Returns true when there is a {@link HTTPSEverywhere.Ruleset} for the
          * given URL
          */
         public bool has_https(string url) {
@@ -273,8 +273,8 @@ namespace HTTPSEverywhere {
         }
 
         /**
-         * Causes a new #Ruleset to be created from the
-         * file at @rulepath and to be stored in this libs memory
+         * Causes a new {@link HTTPSEverywhere.Ruleset} to be created from the
+         * file at rulepath and to be stored in this libs memory
          */
         private void parse_ruleset(uint id, string ruledata) {
             Xml.Doc* doc = Xml.Parser.parse_doc(ruledata);

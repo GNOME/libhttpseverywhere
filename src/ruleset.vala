@@ -159,13 +159,13 @@ namespace HTTPSEverywhere {
                 return url;
             }
 
-            // Skip if the given @url matches any exclusions
+            // Skip if the given url matches any exclusions
             foreach (Regex exc in this.exclusions) {
                 if (exc.match(url, 0))
                     return url;
             }
 
-            // Rewrite the @url by the given rules
+            // Rewrite the url by the given rules
             string u = url;
             foreach (Rule rule in this.rules) {
                 u = rule.rewrite(u);
@@ -250,7 +250,7 @@ namespace HTTPSEverywhere {
         }
 
         /**
-         * This method checks if this target is applying to the given @url
+         * This method checks if this target is applying to the given url
          */
         public bool matches(string url) {
             if (this.wildcardcheck == null) {
