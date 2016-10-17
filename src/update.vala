@@ -209,7 +209,7 @@ namespace HTTPSEverywhere {
             lock_update();
             try {
                 execute_update();
-                context.init();
+                context.init.begin();
                 unlock_update();
             } catch (UpdateError e) {
                 unlock_update();

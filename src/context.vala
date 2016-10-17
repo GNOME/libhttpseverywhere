@@ -192,11 +192,6 @@ namespace HTTPSEverywhere {
             var main_loop = new MainLoop();
             var result = "";
 
-            if (!initialized) {
-                critical("HTTPSEverywhere was not initialized");
-                return "";
-            }
-
             rewrite.begin(url, (obj, res) => {
                 result = rewrite.end(res);
                 main_loop.quit();
@@ -210,16 +205,36 @@ namespace HTTPSEverywhere {
          * Returns true when there is a {@link HTTPSEverywhere.Ruleset} for the
          * given URL
          */
-        public bool has_https(string url) {
+        public async bool has_https(string url) {
             assert(initialized);
             if (!initialized){
-                critical("HTTPSEverywhere was not initialized");
-                return false;
+                init_complete_callbacks.offer(new InitCompleteCallback(() => {
+                    has_https.callback();
+                }));
+                yield;
             }
             foreach (Target target in targets.keys)
                 if (target.matches(url))
                     return true;
             return false;
+        }
+
+        /**
+         * Takes a url and returns true if there is an appropriate
+         * HTTPS-enabled counterpart of it. It is
+         * a programmer error to call this before init().
+         */
+        public bool has_https_sync(string url) {
+            var main_loop = new MainLoop();
+            var result = false;
+
+            has_https.begin(url, (obj, res) => {
+                result = has_https.end(res);
+                main_loop.quit();
+            });
+            main_loop.run();
+
+            return result;
         }
 
         /**

@@ -40,27 +40,16 @@ namespace HTTPSEverywhereTest {
         public static void add_tests () {
             Test.add_func("/httpseverywhere/context/rewrite_sync", () => {
                 var context = new Context();
-                context.init();
+                context.init.begin();
 
                 var result = context.rewrite_sync("http://example.com");
                 assert(result == "http://example.com/" || result == "https://example.com/");
             });
 
-            /* This is a programmer error. The test should emit a critical. */
-            Test.add_func("/httpseverywhere/context/rewrite_before_init_sync", () => {
-                if (Test.subprocess()) {
-                    new Context().rewrite_sync("http://example.com");
-                }
-
-                Test.trap_subprocess(null, 0, 0);
-                Test.trap_assert_failed();
-                Test.trap_assert_stderr("*CRITICAL*");
-            });
-
             Test.add_func("/httpseverywhere/context/rewrite_async", () => {
                 var loop = new MainLoop();
                 var context = new Context();
-                context.init();
+                context.init.begin();
                 context.rewrite.begin("http://example.com", (obj, res) => {
                     var result = context.rewrite.end(res);
                     assert(result == "http://example.com/" || result == "https://example.com/");
@@ -92,7 +81,7 @@ namespace HTTPSEverywhereTest {
 
                 Idle.add(() => {
                     assert(count == 0);
-                    context.init();
+                    context.init.begin();
                     return Source.REMOVE;
                 });
 
