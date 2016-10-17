@@ -88,7 +88,7 @@ namespace HTTPSEverywhere {
          * This function initializes HTTPSEverywhere by loading
          * the rulesets from the filesystem.
          */
-        public void init() {
+        public async void init() {
             initialized = false;
 
             targets = new Gee.HashMap<Target,Gee.ArrayList<uint>>();
@@ -107,7 +107,9 @@ namespace HTTPSEverywhere {
 
             foreach (string dp in datapaths) {
                 try {
-                    parser.load_from_file(dp);
+                    File f = File.new_for_path(dp);
+                    DataInputStream dis = new DataInputStream(f.read());
+                    yield parser.load_from_stream_async(dis);
                 } catch(GLib.Error e) { continue; }
                 success = true;
                 break;
