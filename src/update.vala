@@ -111,7 +111,7 @@ namespace HTTPSEverywhere {
         /**
          * Actually executes the update
          */
-        private void execute_update() throws UpdateError {
+        private async void execute_update() throws UpdateError {
             var session = new Soup.Session();
 
             // Check if update is necessary
@@ -121,7 +121,7 @@ namespace HTTPSEverywhere {
                 FileUtils.get_contents(Path.build_filename(UPDATE_DIR, ETAG_NAME), out etag);
                 var msg = new Soup.Message("HEAD", UPDATE_URL);
                 try {
-                    session.send(msg, null);
+                    yield session.send_async(msg, null);
                     if (msg.response_headers.get_one("Etag") == etag) {
                         throw new UpdateError.NO_UPDATE_AVAILABLE("Already the freshest version!");
                     }
@@ -135,7 +135,7 @@ namespace HTTPSEverywhere {
             var msg = new Soup.Message("GET", UPDATE_URL);
             InputStream stream = null;
             try {
-                stream = session.send(msg, null);
+                stream = yield session.send_async(msg, null);
             } catch (Error e) {
                 throw new UpdateError.CANT_REACH_SERVER("Could request update from '%s'", UPDATE_URL);
             }
@@ -143,8 +143,8 @@ namespace HTTPSEverywhere {
             uint8[] output = new uint8[(5*1024*1024)];
             size_t size_read;
             try {
-                stream.read_all(output, out size_read, null );
-            } catch (IOError e) {
+                yield stream.read_all_async(output, GLib.Priority.DEFAULT, null, out size_read);
+            } catch (Error e) {
                 throw new UpdateError.CANT_READ_HTTP_BODY(e.message);
             }
 
@@ -208,8 +208,8 @@ namespace HTTPSEverywhere {
         public async void update() throws UpdateError {
             lock_update();
             try {
-                execute_update();
-                context.init.begin();
+                yield execute_update();
+                yield context.init();
                 unlock_update();
             } catch (UpdateError e) {
                 unlock_update();
