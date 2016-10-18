@@ -108,7 +108,8 @@ namespace HTTPSEverywhere {
             foreach (string dp in datapaths) {
                 try {
                     File f = File.new_for_path(dp);
-                    DataInputStream dis = new DataInputStream(f.read());
+                    FileInputStream fis = yield f.read_async(Priority.DEFAULT, cancellable);
+                    DataInputStream dis = new DataInputStream(fis);
                     yield parser.load_from_stream_async(dis, cancellable);
                 } catch (Error e) {
                     if (e is IOError.CANCELLED) {
