@@ -111,7 +111,7 @@ namespace HTTPSEverywhere {
         /**
          * Actually executes the update
          */
-        private async void execute_update() throws UpdateError {
+        private async void execute_update(Cancellable? cancellable = null) throws UpdateError, IOError {
             var session = new Soup.Session();
 
             // Check if update is necessary
@@ -121,11 +121,13 @@ namespace HTTPSEverywhere {
                 FileUtils.get_contents(Path.build_filename(UPDATE_DIR, ETAG_NAME), out etag);
                 var msg = new Soup.Message("HEAD", UPDATE_URL);
                 try {
-                    yield session.send_async(msg, null);
+                    yield session.send_async(msg, cancellable);
                     if (msg.response_headers.get_one("Etag") == etag) {
                         throw new UpdateError.NO_UPDATE_AVAILABLE("Already the freshest version!");
                     }
                 } catch (Error e) {
+                    if (e is IOError.CANCELLED)
+                        throw (IOError) e;
                     throw new UpdateError.CANT_REACH_SERVER("Could request update from '%s'", UPDATE_URL);
                 }
             } catch (FileError e) {}
@@ -135,20 +137,25 @@ namespace HTTPSEverywhere {
             var msg = new Soup.Message("GET", UPDATE_URL);
             InputStream stream = null;
             try {
-                stream = yield session.send_async(msg, null);
+                stream = yield session.send_async(msg, cancellable);
             } catch (Error e) {
+                if (e is IOError.CANCELLED)
+                    throw (IOError) e;
                 throw new UpdateError.CANT_REACH_SERVER("Could request update from '%s'", UPDATE_URL);
             }
             // We expect the packed archive to be ~5 MiB big
             uint8[] output = new uint8[(5*1024*1024)];
             size_t size_read;
             try {
-                yield stream.read_all_async(output, GLib.Priority.DEFAULT, null, out size_read);
+                yield stream.read_all_async(output, GLib.Priority.DEFAULT, cancellable, out size_read);
             } catch (Error e) {
+                if (e is IOError.CANCELLED)
+                    throw (IOError) e;
                 throw new UpdateError.CANT_READ_HTTP_BODY(e.message);
             }
 
             // Decompressing the XPI package
+            // FIXME: Lots of slow sync operations below here, should be made async.
             update_state = UpdateState.DECOMPRESSING_XPI;
 
             Archive.Read zipreader = new Archive.Read();
@@ -205,11 +212,11 @@ namespace HTTPSEverywhere {
          * If the update succeeded, it will reload the rulesets.
          * It will return true on success and false on failure
          */
-        public async void update() throws UpdateError {
+        public async void update(Cancellable? cancellable = null) throws UpdateError, IOError {
             lock_update();
             try {
-                yield execute_update();
-                yield context.init();
+                yield execute_update(cancellable);
+                yield context.init(cancellable);
                 unlock_update();
             } catch (UpdateError e) {
                 unlock_update();
