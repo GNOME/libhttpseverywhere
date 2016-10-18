@@ -61,7 +61,7 @@ namespace HTTPSEverywhereTest {
             /* Ensure that no calls to rewrite complete before init is called,
              * and that all calls do complete after init is called.
              */
-            Test.add_func("/httpseverywhere/context/rewrite_before_init_async", () => {
+            Test.add_func("/httpseverywhere/context/rewrite_async_before_init", () => {
                 var loop = new MainLoop();
                 var context = new Context();
                 var count = 0;
