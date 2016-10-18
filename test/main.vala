@@ -88,6 +88,26 @@ namespace HTTPSEverywhereTest {
                 loop.run();
                 assert(count == 2);
             });
+
+            Test.add_func("/httpseverywhere/context/cancel_init", () => {
+                var loop = new MainLoop();
+                var context = new Context();
+                var cancellable = new Cancellable();
+
+                context.init.begin(cancellable, (obj, res) => {
+                    try {
+                        context.init.end(res);
+                        assert_not_reached();
+                    } catch (Error e) {
+                        assert(e is IOError.CANCELLED);
+                        assert(cancellable.is_cancelled());
+                        loop.quit();
+                    }
+                });
+
+                cancellable.cancel();
+                loop.run();
+            });
         }
     }
 
