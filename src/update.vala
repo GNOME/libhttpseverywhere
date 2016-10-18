@@ -55,8 +55,8 @@ namespace HTTPSEverywhere {
         /**
          * Constants
          */
-        private static  string UPDATE_DIR = Path.build_filename(Environment.get_user_data_dir(),
-                                                              "libhttpseverywhere");
+        private static string UPDATE_DIR = Path.build_filename(Environment.get_user_data_dir(),
+                                                               "libhttpseverywhere");
         private const string UPDATE_URL = "https://www.eff.org/files/https-everywhere-latest.xpi";
         private const string LOCK_NAME = "lock";
         private const string ETAG_NAME = "etag";
