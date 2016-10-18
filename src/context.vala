@@ -206,7 +206,6 @@ namespace HTTPSEverywhere {
          * given URL
          */
         public async bool has_https(string url) {
-            assert(initialized);
             if (!initialized){
                 init_complete_callbacks.offer(new InitCompleteCallback(() => {
                     has_https.callback();
