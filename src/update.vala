@@ -1,3 +1,4 @@
+/* -*- Mode: vala; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /********************************************************************
 # Copyright 2015-2016 Daniel 'grindhold' Brendle
 #
