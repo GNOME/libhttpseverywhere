@@ -103,8 +103,8 @@ namespace HTTPSEverywhere {
             foreach (string dp in Environment.get_system_data_dirs())
                 datapaths.add(Path.build_filename(dp, "libhttpseverywhere", rulesets_file));
 
-			// local rules in repo dir to test data without installation
-			datapaths.add(Path.build_filename(Environment.get_current_dir(), "..", "data", rulesets_file));
+            // local rules in repo dir to test data without installation
+            datapaths.add(Path.build_filename(Environment.get_current_dir(), "..", "data", rulesets_file));
 
             parser = new Json.Parser();
             bool success = false;
