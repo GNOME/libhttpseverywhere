@@ -129,6 +129,8 @@ namespace HTTPSEverywhere {
                 } catch (Error e) {
                     if (e is IOError.CANCELLED)
                         throw (IOError) e;
+                    if (e is UpdateError.NO_UPDATE_AVAILABLE)
+                        throw (UpdateError) e;
                     throw new UpdateError.CANT_REACH_SERVER("Could request update from '%s'", UPDATE_URL);
                 }
             } catch (FileError e) {}
