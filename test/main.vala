@@ -73,6 +73,17 @@ namespace HTTPSEverywhereTest {
                 cancellable.cancel();
                 loop.run();
             });
+
+            Test.add_func("/httpseverywhere/context/rewrite_before_init", () => {
+                if (Test.subprocess()) {
+                    /* Should emit a critical since init has not been called. */
+                    new Context().rewrite("http://example.com");
+                }
+
+                Test.trap_subprocess(null, 0, 0);
+                Test.trap_assert_failed();
+                Test.trap_assert_stderr("*CRITICAL*");
+            });
         }
     }
 
