@@ -30,11 +30,17 @@ namespace HTTPSEverywhere {
      */
     public class Context {
         private Json.Parser parser;
-        private bool initialized = false;
 
         private RewriteResult last_rewrite_state;
         private Gee.HashMap<Target, Gee.ArrayList<uint>> targets;
         private Gee.HashMap<uint, Ruleset> rulesets;
+
+        /**
+         * Indicates whether the library has been successfully
+         * initialized. Be careful: this property will become %FALSE
+         * at some point if you update the rulesets.
+         */
+        public bool initialized { get; set; default = false; }
 
         /**
          * Different states that express what a rewrite process did to
