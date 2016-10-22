@@ -126,14 +126,12 @@ namespace HTTPSEverywhere {
          * Takes a url and returns the appropriate
          * HTTPS-enabled counterpart if there is any
          */
-        public string rewrite(string p_url) {
+        public string rewrite(string p_url)
+                requires(initialized) {
             string url = p_url;
 
             if (!url.has_prefix("http://"))
                 return url;
-
-            if (!initialized)
-                critical ("You must initialize libhttpseverywhere before using rewrite");
 
             if (url.has_prefix("http://") && !url.has_suffix("/")) {
                 var rep = url.replace("/","");
@@ -167,10 +165,8 @@ namespace HTTPSEverywhere {
          * Returns true when there is a {@link HTTPSEverywhere.Ruleset} for the
          * given URL
          */
-        public bool has_https(string url) {
-            if (!initialized)
-                critical ("You must initialize libhttpseverywhere before using has_https");
-
+        public bool has_https(string url)
+                requires(initialized) {
             foreach (Target target in targets.keys)
                 if (target.matches(url))
                     return true;
