@@ -28,7 +28,7 @@ namespace HTTPSEverywhere {
      * The library context object. Most applications will only need to create a
      * single context.
      */
-    public class Context {
+    public class Context : GLib.Object {
         private Json.Parser parser;
 
         private RewriteResult last_rewrite_state;
