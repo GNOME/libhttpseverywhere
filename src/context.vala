@@ -40,7 +40,7 @@ namespace HTTPSEverywhere {
          * initialized. Be careful: this property will become %FALSE
          * at some point if you update the rulesets.
          */
-        public bool initialized { get; set; default = false; }
+        public bool initialized { get; private set; default = false; }
 
         /**
          * Different states that express what a rewrite process did to
