@@ -41,17 +41,19 @@ namespace HTTPSEverywhereTest {
         public static void add_tests () {
             Test.add_func("/httpseverywhere/context/rewrite", () => {
                 var context = new Context();
+                var m = new MainLoop();
                 context.init.begin(null, (obj, res) => {
                     try {
                         context.init.end(res);
                         var result = context.rewrite("http://example.com");
                         assert(result == "http://example.com/" || result == "https://example.com/");
                         assert(context.has_https("http://example.com") == result.has_prefix("https://"));
+                        m.quit();
                     } catch (Error e) {
                         GLib.assert_not_reached();
                     }
                 });
-
+                m.run();
             });
 
             Test.add_func("/httpseverywhere/context/cancel_init", () => {
