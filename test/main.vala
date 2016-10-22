@@ -39,67 +39,19 @@ namespace HTTPSEverywhereTest {
          * changing rulesets.
          */
         public static void add_tests () {
-            Test.add_func("/httpseverywhere/context/rewrite_sync", () => {
+            Test.add_func("/httpseverywhere/context/rewrite", () => {
                 var context = new Context();
-                context.init.begin();
-
-                var result = context.rewrite_sync("http://example.com");
-                assert(result == "http://example.com/" || result == "https://example.com/");
-                assert(context.has_https_sync("http://example.com") == result.has_prefix("https://"));
-            });
-
-            Test.add_func("/httpseverywhere/context/rewrite_async", () => {
-                var loop = new MainLoop();
-                var context = new Context();
-                context.init.begin();
-                context.rewrite.begin("http://example.com", (obj, res) => {
-                    var result = context.rewrite.end(res);
-                    assert(result == "http://example.com/" || result == "https://example.com/");
-                    context.has_https.begin("http://example.com", (obj, res) => {
-                        var has_https = context.has_https.end(res);
-                        assert(has_https == result.has_prefix("https://"));
-                        loop.quit();
-                    });
-                });
-                loop.run();
-            });
-
-            /* Ensure that no calls to rewrite complete before init is called,
-             * and that all calls do complete after init is called.
-             */
-            Test.add_func("/httpseverywhere/context/async_calls_before_init", () => {
-                var loop = new MainLoop();
-                var context = new Context();
-                var count = 0;
-
-                context.rewrite.begin("http://example.com", (obj, res) => {
-                    var result = context.rewrite.end(res);
-                    assert(result == "http://example.com/" || result == "https://example.com/");
-                    assert(count == 0);
-                    count++;
+                context.init.begin(null, (obj, res) => {
+                    try {
+                        context.init.end(res);
+                        var result = context.rewrite("http://example.com");
+                        assert(result == "http://example.com/" || result == "https://example.com/");
+                        assert(context.has_https("http://example.com") == result.has_prefix("https://"));
+                    } catch (Error e) {
+                        GLib.assert_not_reached();
+                    }
                 });
 
-                context.rewrite.begin("http://example.com", (obj, res) => {
-                    var result = context.rewrite.end(res);
-                    assert(result == "http://example.com/" || result == "https://example.com/");
-                    assert(count == 1);
-                    count++;
-                });
-
-                context.has_https.begin("http://example.com", (obj, res) => {
-                    assert(count == 2);
-                    count++;
-                    loop.quit();
-                });
-
-                Idle.add(() => {
-                    assert(count == 0);
-                    context.init.begin();
-                    return Source.REMOVE;
-                });
-
-                loop.run();
-                assert(count == 3);
             });
 
             Test.add_func("/httpseverywhere/context/cancel_init", () => {

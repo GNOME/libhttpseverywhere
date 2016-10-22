@@ -152,18 +152,14 @@ namespace HTTPSEverywhere {
          * Takes a url and returns the appropriate
          * HTTPS-enabled counterpart if there is any
          */
-        public async string rewrite(string p_url) {
+        public string rewrite(string p_url) {
             string url = p_url;
 
             if (!url.has_prefix("http://"))
                 return url;
 
-            if (!initialized) {
-                init_complete_callbacks.offer(new InitCompleteCallback(() => {
-                    rewrite.callback();
-                }));
-                yield;
-            };
+            if (!initialized)
+                critical ("You must initialize libhttpseverywhere before using rewrite");
 
             if (url.has_prefix("http://") && !url.has_suffix("/")) {
                 var rep = url.replace("/","");
@@ -194,57 +190,17 @@ namespace HTTPSEverywhere {
         }
 
         /**
-         * Takes a url and returns the appropriate
-         * HTTPS-enabled counterpart if there is any.
-         * May block for a relatively long time. It is
-         * a programmer error to call this before init().
-         */
-        public string rewrite_sync(string url) {
-            var main_loop = new MainLoop();
-            var result = "";
-
-            rewrite.begin(url, (obj, res) => {
-                result = rewrite.end(res);
-                main_loop.quit();
-            });
-            main_loop.run();
-
-            return result;
-        }
-
-        /**
          * Returns true when there is a {@link HTTPSEverywhere.Ruleset} for the
          * given URL
          */
-        public async bool has_https(string url) {
-            if (!initialized){
-                init_complete_callbacks.offer(new InitCompleteCallback(() => {
-                    has_https.callback();
-                }));
-                yield;
-            }
+        public bool has_https(string url) {
+            if (!initialized)
+                critical ("You must initialize libhttpseverywhere before using has_https");
+
             foreach (Target target in targets.keys)
                 if (target.matches(url))
                     return true;
             return false;
-        }
-
-        /**
-         * Takes a url and returns true if there is an appropriate
-         * HTTPS-enabled counterpart of it. It is
-         * a programmer error to call this before init().
-         */
-        public bool has_https_sync(string url) {
-            var main_loop = new MainLoop();
-            var result = false;
-
-            has_https.begin(url, (obj, res) => {
-                result = has_https.end(res);
-                main_loop.quit();
-            });
-            main_loop.run();
-
-            return result;
         }
 
         /**
