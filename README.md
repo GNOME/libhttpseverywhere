@@ -1,14 +1,13 @@
 libhttpseverywhere
 ==================
 
-In the near future this library will enable you to leverage the power of 
+This library enables you to leverage the power of
 [HTTPSEverywhere](https://www.eff.org/https-everywhere) to any desktop-application you want
 
 HTTPSEverywhere is a browser plugin that comes with a set of rules that you can use to ensure that
 you use HTTP instead of HTTPS only when this is absolutely not circumventable.
-With libhttpseverywhere you will get a C-library you can link/bind against in almost all languages
-
-libhttpseverywhere is being written to be used in [Rainbow Lollipop](http://rainbow-lollipop.de)
+With libhttpseverywhere you will get a C-bindable, GLib-based library you can
+link/bind against in almost all languages
 
 As a library written in Vala, libhttpseverywhere will support GObject-Introspection. This means
 that you can use the lib in many popular languages like e.g. Ruby, Python or Javascript.
@@ -16,7 +15,13 @@ that you can use the lib in many popular languages like e.g. Ruby, Python or Jav
 Current Status
 --------------
 
-First release coming soon!
+First release coming tomorrow!
+
+Current Users
+-------------
+
+  * [Rainbow Lollipop](http://rainbow-lollipop.de) - An experimental visual history browser.
+  * [GNOME Web](https://wiki.gnome.org/Apps/Web) - The default Browser of the GNOME Desktop
 
 Dependencies
 ------------
@@ -24,11 +29,13 @@ Dependencies
 The following libraries have to be present for libhttpseverywhere to run:
 
   * glib-2.0
+  * gee-0.8
   * json-glib-1.0
   * libxml-2.0
   * libsoup-2.4
-  * gee-0.8
   * libarchive
+
+The library names are in pkg-config notation
 
 Building
 --------
@@ -36,11 +43,17 @@ Building
 [Meson](http://mesonbuild.com) is used as the buildsystem for libhttpseverywhere. The build dependencies
 are the following:
 
-  * valac - Vala compiler
-  * valadoc - Vala documentation tool
-  * g-ir-compiler - GObject introspection compiler
-  * json-glib-dev - Dev headers for json-glib
-  * libgirepository1.0-dev - Dev headers for gobject introspection
+  * c-compiler of your choice
+  * _valac_ - Vala compiler
+  * _valadoc_ - Vala documentation tool
+  * _gobject-introspection_ - GObject introspection compiler
+  * _libgirepository1.0-dev_ - Dev headers for gobject introspection
+  * _libjson-glib-dev_ - Dev headers for json-glib
+  * _libxml2-dev_ - Dev headers for libxml2
+  * _libsoup2.4-dev_ - Dev headers for libsoup-2.4
+  * _libarchive-dev_ - Dev headers for libarchive
+
+Italics are valid debian package names.
 
 Clone and build the library as follows:
 
@@ -51,6 +64,13 @@ $ mkdir build
 $ cd build
 $ meson ..
 $ ninja
+```
+
+If you want to build the documentation, you'll currently have
+to explicitly build it due to a bug in meson since 0.3.0:
+
+```
+$ ninja devhelp
 ```
 
 If you desire to install the library, execute:
