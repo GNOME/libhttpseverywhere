@@ -67,7 +67,7 @@ $ ninja
 ```
 
 If you want to build the documentation, you'll currently have
-to explicitly build it due to a bug in meson since 0.3.0:
+to explicitly build it due to a bug in meson since 0.35.0:
 
 ```
 $ ninja devhelp
