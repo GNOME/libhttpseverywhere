@@ -44,6 +44,8 @@ httpseverywhere_test_source = [
     'test/main.vala'
 ]
 
+add_global_arguments('-w', language:'c')
+
 run_command ('mkdir', meson.current_build_dir()+'/httpseverywhere-'+api)
 
 httpseverywhere_lib = library('httpseverywhere-'+api, httpseverywhere_lib_source,
