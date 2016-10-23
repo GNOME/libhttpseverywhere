@@ -12,11 +12,6 @@ link/bind against in almost all languages
 As a library written in Vala, libhttpseverywhere will support GObject-Introspection. This means
 that you can use the lib in many popular languages like e.g. Ruby, Python or Javascript.
 
-Current Status
---------------
-
-First release coming tomorrow!
-
 Current Users
 -------------
 
