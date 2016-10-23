@@ -23,7 +23,7 @@ project ('httpseverywhere', 'vala','c')
 
 pkgconfig = import('pkgconfig')
 
-api = '0.2'
+api = '0.4'
 
 glib = dependency('glib-2.0')
 gobject = dependency('gobject-2.0')
@@ -70,7 +70,7 @@ custom_target('httpseverywhere-typelib',
 valadoc = find_program('valadoc')
 custom_target('apidocs',
                input: httpseverywhere_lib_source,
-               command: [valadoc, '-o', 'devhelp/httpseverywhere-0.2', '--doclet', 'devhelp', '@INPUT@',
+               command: [valadoc, '-o', 'devhelp/httpseverywhere-'+api, '--doclet', 'devhelp', '@INPUT@',
                '--force', '--pkg', 'gee-0.8', '--pkg', 'json-glib-1.0', '--pkg', 'libxml-2.0', '--pkg', 'libarchive', '--pkg', 'libsoup-2.4'],
                output: 'devhelp',
 )
@@ -84,7 +84,7 @@ pkgconfig.generate(libraries : httpseverywhere_lib,
               description : 'A library to rewrite HTTP URLs to HTTPS URLs.',
               install: true)
 
-install_headers(meson.current_build_dir()+'/httpseverywhere-'+api+'/httpseverywhere.h', subdir: 'httpseverywhere-0.2')
+install_headers(meson.current_build_dir()+'/httpseverywhere-'+api+'/httpseverywhere.h', subdir: 'httpseverywhere-'+api)
 install_subdir(meson.current_build_dir()+'/devhelp/httpseverywhere-'+api+'/httpseverywhere-'+api, install_dir: get_option('datadir')+'/devhelp/books')
 install_data('httpseverywhere-'+api+'.deps', install_dir: get_option('datadir') + '/vala/vapi')
 install_data(meson.current_build_dir()+'/httpseverywhere-'+api+'.vapi', install_dir: get_option('datadir') + '/vala/vapi')
