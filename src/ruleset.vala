@@ -21,6 +21,9 @@
 *********************************************************************/
 
 namespace HTTPSEverywhere {
+    /**
+     * Errors that may occur when handling {@link HTTPSEverywhere.Ruleset}s
+     */
     public errordomain RulesetError {
         /**
          * Gets thrown when a ruleset fails to parse

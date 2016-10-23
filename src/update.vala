@@ -23,7 +23,7 @@
 namespace HTTPSEverywhere {
     /**
      * This enumerates states the update passes
-     * through. They can be obtained via get_update_state()
+     * through. They can be obtained via {@link Updater.update_state}
      * And used to show informative messages about progress
      * to the user.
      */

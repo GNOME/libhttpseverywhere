@@ -20,6 +20,10 @@
 # If not, see http://www.gnu.org/licenses/.
 *********************************************************************/
 
+/**
+ * A set of classes that enable you to use the HTTPS-Everywhere data
+ * to convert http-URLs into https-URLs.
+ */
 namespace HTTPSEverywhere {
 
     private const string rulesets_file = "rulesets.json";
@@ -37,7 +41,7 @@ namespace HTTPSEverywhere {
 
         /**
          * Indicates whether the library has been successfully
-         * initialized. Be careful: this property will become %FALSE
+         * initialized. Be careful: this property will become //false//
          * at some point if you update the rulesets.
          */
         public bool initialized { get; private set; default = false; }
@@ -122,7 +126,7 @@ namespace HTTPSEverywhere {
 
         /**
          * Obtain the RewriteResult for the last rewrite that
-         * has been done with HTTPSEverywhere.rewrite(string url)
+         * has been done with {@link Context.rewrite}
          */
         public RewriteResult rewrite_result() {
             return last_rewrite_state;
