@@ -136,21 +136,21 @@ namespace HTTPSEverywhere {
          * Takes a url and returns the appropriate
          * HTTPS-enabled counterpart if there is any
          */
-        public string rewrite(string p_url)
+        public string rewrite(string url)
                 requires(initialized) {
-            string url = p_url;
+            string p_url = url;
 
-            if (!url.has_prefix("http://"))
-                return url;
+            if (!p_url.has_prefix("http://"))
+                return p_url;
 
-            if (url.has_prefix("http://") && !url.has_suffix("/")) {
-                var rep = url.replace("/","");
-                if (url.length - rep.length <= 2)
-                    url += "/";
+            if (p_url.has_prefix("http://") && !p_url.has_suffix("/")) {
+                var rep = p_url.replace("/","");
+                if (p_url.length - rep.length <= 2)
+                    p_url += "/";
             }
             Ruleset? rs = null;
             foreach (Target target in targets.keys) {
-                if (target.matches(url)) {
+                if (target.matches(p_url)) {
                     foreach (uint ruleset_id in targets.get(target)) {
                         if (!rulesets.has_key(ruleset_id))
                             load_ruleset(ruleset_id);
@@ -161,11 +161,11 @@ namespace HTTPSEverywhere {
             }
             if (rs == null) {
                 last_rewrite_state = RewriteResult.NO_RULESET;
-                return url;
+                return p_url;
             } else {
                 last_rewrite_state = RewriteResult.NO_MATCH;
-                string rurl = rs.rewrite(url);
-                if (url.has_prefix("https://"))
+                string rurl = rs.rewrite(p_url);
+                if (p_url.has_prefix("https://"))
                     last_rewrite_state = RewriteResult.OK;
                 return rs.rewrite(rurl);
             }
