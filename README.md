@@ -23,6 +23,12 @@ Current Users
   * [Rainbow Lollipop](http://rainbow-lollipop.de) - An experimental visual history browser.
   * [GNOME Web](https://wiki.gnome.org/Apps/Web) - The default Browser of the GNOME Desktop
 
+Documentation
+-------------
+
+You can either generate the documentation as a devhelp-book for yourself (see Building-section)
+or you can browser them online: [httpseverywhere-0.2 API docs](http://grindhold.de/httpseverywhere-0.2/)
+
 Dependencies
 ------------
 

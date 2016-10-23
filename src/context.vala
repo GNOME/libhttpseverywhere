@@ -21,7 +21,7 @@
 *********************************************************************/
 
 /**
- * A set of classes that enable you to use the HTTPS-Everywhere data
+ * A set of classes that enables you to use the HTTPS-Everywhere data
  * to convert http-URLs into https-URLs.
  */
 namespace HTTPSEverywhere {
