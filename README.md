@@ -27,7 +27,7 @@ Documentation
 -------------
 
 You can either generate the documentation as a devhelp-book for yourself (see Building-section)
-or you can browser them online: [httpseverywhere-0.2 API docs](http://grindhold.de/httpseverywhere-0.2/)
+or you can browse them online: [httpseverywhere-0.2 API docs](http://grindhold.de/httpseverywhere-0.2/)
 
 Dependencies
 ------------
