@@ -219,10 +219,10 @@ namespace HTTPSEverywhere {
             lock_update();
             try {
                 yield execute_update(cancellable);
-                unlock_update();
             } catch (UpdateError e) {
-                unlock_update();
                 throw e;
+            } finally {
+                unlock_update();
             }
         }
     }
