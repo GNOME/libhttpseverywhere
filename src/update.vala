@@ -212,14 +212,13 @@ namespace HTTPSEverywhere {
         /**
          * This function initializes an update of the used rulefiles
          *
-         * If the update succeeded, it will reload the rulesets.
+         * Remember to update the rulesets afterwards via {@link Context.init}
          * It will return true on success and false on failure
          */
         public async void update(Cancellable? cancellable = null) throws UpdateError, IOError {
             lock_update();
             try {
                 yield execute_update(cancellable);
-                yield context.init(cancellable);
                 unlock_update();
             } catch (UpdateError e) {
                 unlock_update();
