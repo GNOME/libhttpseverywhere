@@ -216,6 +216,13 @@ namespace HTTPSEverywhere {
          * It will return true on success and false on failure
          */
         public async void update(Cancellable? cancellable = null) throws UpdateError, IOError {
+            try {
+                var f = File.new_for_path(UPDATE_DIR);
+                f.make_directory_with_parents();
+            } catch {
+                critical("Could not create "+UPDATE_DIR+"\n");
+            }
+
             lock_update();
             try {
                 yield execute_update(cancellable);
