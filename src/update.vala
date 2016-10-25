@@ -219,7 +219,10 @@ namespace HTTPSEverywhere {
             try {
                 var f = File.new_for_path(UPDATE_DIR);
                 f.make_directory_with_parents();
-            } catch {}
+            } catch (Error e) {
+                if (!(e is IOError.EXISTS))
+                    critical("Could not create %s: %s", UPDATE_DIR, e.message);
+            }
 
             lock_update();
             try {
