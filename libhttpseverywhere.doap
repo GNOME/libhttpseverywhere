@@ -15,12 +15,11 @@
   <bug-database rdf:resource="https://bugzilla.gnome.org/browse.cgi?product=libhttpseverywhere" />
 -->
 
-<!-- TODO: Replace me with grindhold once he has a GNOME account. -->
   <maintainer>
     <foaf:Person>
-      <foaf:name>Michael Catanzaro</foaf:name>
-      <foaf:mbox rdf:resource="mailto:mcatanzaro@gnome.org" />
-      <gnome:userid>mcatanzaro</gnome:userid>
+      <foaf:name>Daniel Brendle</foaf:name>
+      <foaf:mbox rdf:resource="mailto:grindhold+lihedf@skarphed.org" />
+      <gnome:userid>elbren</gnome:userid>
     </foaf:Person>
   </maintainer>
 </Project>
