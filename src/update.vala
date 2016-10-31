@@ -95,7 +95,7 @@ namespace HTTPSEverywhere {
                 file.create(FileCreateFlags.NONE);
                 update_in_progress = true;
             } catch (Error e) {
-                if (e is FileError.EXIST)
+                if (e is IOError.EXISTS || e is FileError.EXIST)
                     throw new UpdateError.IN_PROGRESS("Update is already in progress");
                 throw new UpdateError.WRITE_FAILED("Error creating lock file: %s".printf(e.message));
             }
