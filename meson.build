@@ -23,7 +23,7 @@ project ('httpseverywhere', 'vala','c')
 
 pkgconfig = import('pkgconfig')
 
-api = '0.4'
+api = '0.2'
 
 glib = dependency('glib-2.0')
 gobject = dependency('gobject-2.0')
