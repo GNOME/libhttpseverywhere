@@ -75,7 +75,8 @@ custom_target('apidocs',
                output: 'devhelp',
 )
 
-              version : '0.2.4',
+pkgconfig.generate(libraries : httpseverywhere_lib,
+              version : '0.2.6',
               name : 'libhttpseverywhere',
               filebase : meson.current_build_dir()+'/httpseverywhere-'+api,
               requires : 'glib-2.0 gobject-2.0 gio-2.0 json-glib-1.0 libxml-2.0 libsoup-2.4 gee-0.8 libarchive',
