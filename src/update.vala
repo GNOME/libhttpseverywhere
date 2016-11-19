@@ -88,16 +88,40 @@ namespace HTTPSEverywhere {
         /**
          * Writes a file to the disk that inhibits other instances
          * of this library from doing updates
+         *
+         * If the lockfile has been created longer than 20 minutes
+         * ago, the program will assume that it is a file from a failed
+         * attempt to update and continue anyway.
+         * 40 Minutes is the approximate time a user of a 56k-model will
+         * need to download the updates.
          */
         private void lock_update() throws UpdateError {
+            var file = File.new_for_path(Path.build_filename(UPDATE_DIR, LOCK_NAME));
+            var lockfile_exists = false;
             try {
-                var file = File.new_for_path(Path.build_filename(UPDATE_DIR, LOCK_NAME));
-                file.create(FileCreateFlags.NONE);
-                update_in_progress = true;
-            } catch (Error e) {
-                if (e is IOError.EXISTS || e is FileError.EXIST)
-                    throw new UpdateError.IN_PROGRESS("Update is already in progress");
-                throw new UpdateError.WRITE_FAILED("Error creating lock file: %s".printf(e.message));
+                lockfile_exists = file.query_exists();
+            } catch (Error e ) {
+                throw new UpdateError.WRITE_FAILED("Error querying lock file: %s".printf(e.message));
+            }
+            if (lockfile_exists) {
+                try {
+                    var info = file.query_info("*", FileQueryInfoFlags.NONE);
+                    DateTime modification_time = new GLib.DateTime.from_timeval_local(info.get_modification_time());
+                    DateTime current_time = new GLib.DateTime.now_local();
+                    if (current_time.difference(modification_time) < 40 * TimeSpan.MINUTE) {
+                        throw new UpdateError.IN_PROGRESS("Update is already in progress");
+                    }
+                    update_in_progress = true;
+                } catch (Error e ) {
+                    throw new UpdateError.WRITE_FAILED("Error querying lock file: %s".printf(e.message));
+                }
+            } else {
+                try {
+                    file.create(FileCreateFlags.NONE);
+                    update_in_progress = true;
+                } catch (Error e) {
+                    throw new UpdateError.WRITE_FAILED("Error creating lock file: %s".printf(e.message));
+                }
             }
         }
 
