@@ -113,6 +113,9 @@ namespace HTTPSEverywhere {
                     }
                     update_in_progress = true;
                 } catch (Error e ) {
+                    if (e is UpdateError.IN_PROGRESS) {
+                        throw (UpdateError)e;
+                    }
                     throw new UpdateError.WRITE_FAILED("Error querying lock file: %s".printf(e.message));
                 }
             } else {
