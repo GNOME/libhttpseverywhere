@@ -66,14 +66,15 @@ custom_target('httpseverywhere-typelib',
                install: true,
                install_dir: get_option('libdir') + '/girepository-1.0')
 
-
-valadoc = find_program('valadoc')
-custom_target('apidocs',
-               input: httpseverywhere_lib_source,
-               command: [valadoc, '-o', 'devhelp/httpseverywhere-'+api, '--doclet', 'devhelp', '@INPUT@',
-               '--force', '--pkg', 'gee-0.8', '--pkg', 'json-glib-1.0', '--pkg', 'libxml-2.0', '--pkg', 'libarchive', '--pkg', 'libsoup-2.4'],
-               output: 'devhelp',
-)
+if get_option('enable_valadoc')
+	valadoc = find_program('valadoc', required=false)
+	custom_target('apidocs',
+                   input: httpseverywhere_lib_source,
+                   command: [valadoc, '-o', 'devhelp/httpseverywhere-'+api, '--doclet', 'devhelp', '@INPUT@',
+                   '--force', '--pkg', 'gee-0.8', '--pkg', 'json-glib-1.0', '--pkg', 'libxml-2.0', '--pkg', 'libarchive', '--pkg', 'libsoup-2.4'],
+                   output: 'devhelp',
+	)
+endif
 
 pkgconfig.generate(libraries : httpseverywhere_lib,
               version : '0.3.0',
