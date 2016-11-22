@@ -77,13 +77,13 @@ if get_option('enable_valadoc')
 endif
 
 pkgconfig.generate(libraries : httpseverywhere_lib,
-              version : '0.2.6',
-              name : 'libhttpseverywhere',
-              filebase : meson.current_build_dir()+'/httpseverywhere-'+api,
-              requires : 'glib-2.0 gobject-2.0 gio-2.0 json-glib-1.0 libxml-2.0 libsoup-2.4 gee-0.8 libarchive',
-              subdirs: 'httpseverywhere-'+api,
-              description : 'A library to rewrite HTTP URLs to HTTPS URLs.',
-              install: true)
+                   version : '0.2.7',
+                   name : 'libhttpseverywhere',
+                   filebase : meson.current_build_dir()+'/httpseverywhere-'+api,
+                   requires : 'glib-2.0 gobject-2.0 gio-2.0 json-glib-1.0 libxml-2.0 libsoup-2.4 gee-0.8 libarchive',
+                   subdirs: 'httpseverywhere-'+api,
+                   description : 'A library to rewrite HTTP URLs to HTTPS URLs.',
+                   install: true)
 
 install_headers(meson.current_build_dir()+'/httpseverywhere-'+api+'/httpseverywhere.h', subdir: 'httpseverywhere-'+api)
 install_subdir(meson.current_build_dir()+'/devhelp/httpseverywhere-'+api+'/httpseverywhere-'+api, install_dir: get_option('datadir')+'/devhelp/books')
