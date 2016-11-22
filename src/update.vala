@@ -97,13 +97,7 @@ namespace HTTPSEverywhere {
          */
         private void lock_update() throws UpdateError {
             var file = File.new_for_path(Path.build_filename(UPDATE_DIR, LOCK_NAME));
-            var lockfile_exists = false;
-            try {
-                lockfile_exists = file.query_exists();
-            } catch (Error e ) {
-                throw new UpdateError.WRITE_FAILED("Error querying lock file: %s".printf(e.message));
-            }
-            if (lockfile_exists) {
+            if (file.query_exists()) {
                 try {
                     var info = file.query_info("*", FileQueryInfoFlags.NONE);
                     DateTime modification_time = new GLib.DateTime.from_timeval_local(info.get_modification_time());
