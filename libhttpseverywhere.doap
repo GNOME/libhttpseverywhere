@@ -11,9 +11,7 @@
   <programming-language>Vala</programming-language>
 
   <download-page rdf:resource="http://download.gnome.org/sources/libhttpseverywhere/" />
-<!-- TODO: Add this once the Bugzilla product exists
   <bug-database rdf:resource="https://bugzilla.gnome.org/browse.cgi?product=libhttpseverywhere" />
--->
 
   <maintainer>
     <foaf:Person>
