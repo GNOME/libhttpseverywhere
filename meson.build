@@ -77,7 +77,7 @@ if get_option('enable_valadoc')
 endif
 
 pkgconfig.generate(libraries : httpseverywhere_lib,
-                   version : '0.2.8',
+                   version : '0.2.9',
                    name : 'libhttpseverywhere',
                    filebase : meson.current_build_dir()+'/httpseverywhere-'+api,
                    requires : 'glib-2.0 gobject-2.0 gio-2.0 json-glib-1.0 libxml-2.0 libsoup-2.4 gee-0.8 libarchive',
