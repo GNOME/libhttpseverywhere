@@ -25,6 +25,13 @@ pkgconfig = import('pkgconfig')
 
 api = '0.2'
 
+# This isn't libtool. To keep things simple, we can use the same version
+# number for the soname as our actual version. But it requires that we
+# generally follow libtool semantics: bump the first version whenever
+# breaking ABI, bump the second version whenever adding new API, bump
+# the third version for every release.
+libhttpseverywhere_version = '0.2.9'
+
 glib = dependency('glib-2.0')
 gobject = dependency('gobject-2.0')
 json_glib = dependency('json-glib-1.0')
@@ -48,10 +55,11 @@ add_global_arguments('-w', language:'c')
 
 run_command ('mkdir', meson.current_build_dir()+'/httpseverywhere-'+api)
 
-httpseverywhere_lib = library('httpseverywhere-'+api, httpseverywhere_lib_source,
-                              dependencies: [glib, gobject, json_glib, libxml, soup, gio, gee, archive],
-                              vala_args: ['--gir=' + '../HTTPSEverywhere-'+api+'.gir', '-H', 'httpseverywhere-'+api+'/httpseverywhere.h'],
-                              install: true)
+httpseverywhere_lib = shared_library('httpseverywhere-'+api, httpseverywhere_lib_source,
+                                     dependencies: [glib, gobject, json_glib, libxml, soup, gio, gee, archive],
+                                     vala_args: ['--gir=' + '../HTTPSEverywhere-'+api+'.gir', '-H', 'httpseverywhere-'+api+'/httpseverywhere.h'],
+                                     install: true,
+                                     version: libhttpseverywhere_version)
 
 httpseverywhere_test = executable('httpseverywhere_test', httpseverywhere_test_source,
                                   dependencies: [glib, gobject, gio, gee, libxml],
@@ -77,7 +85,7 @@ if get_option('enable_valadoc')
 endif
 
 pkgconfig.generate(libraries : httpseverywhere_lib,
-                   version : '0.2.9',
+                   version : libhttpseverywhere_version,
                    name : 'libhttpseverywhere',
                    filebase : meson.current_build_dir()+'/httpseverywhere-'+api,
                    requires : 'glib-2.0 gobject-2.0 gio-2.0 json-glib-1.0 libxml-2.0 libsoup-2.4 gee-0.8 libarchive',
