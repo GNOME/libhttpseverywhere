@@ -39,6 +39,10 @@ namespace HTTPSEverywhere {
         private Gee.HashMap<Target, Gee.ArrayList<uint>> targets;
         private Gee.HashMap<uint, Ruleset> rulesets;
 
+        // Cache for recently used targets
+        private Gee.ArrayList<Target> cache;
+        private const int CACHE_SIZE = 20;
+
         /**
          * Indicates whether the library has been successfully
          * initialized. Be careful: this property will become //false//
@@ -81,6 +85,7 @@ namespace HTTPSEverywhere {
 
             targets = new Gee.HashMap<Target,Gee.ArrayList<uint>>();
             rulesets = new Gee.HashMap<int, Ruleset>();
+            cache = new Gee.ArrayList<Target>();
 
             var datapaths = new Gee.ArrayList<string>();
 
@@ -149,7 +154,8 @@ namespace HTTPSEverywhere {
                     p_url += "/";
             }
             Ruleset? rs = null;
-            foreach (Target target in targets.keys) {
+
+            foreach (Target target in this.cache) {
                 if (target.matches(p_url)) {
                     foreach (uint ruleset_id in targets.get(target)) {
                         if (!rulesets.has_key(ruleset_id))
@@ -159,6 +165,23 @@ namespace HTTPSEverywhere {
                     break;
                 }
             }
+
+            if (rs == null) {
+                foreach (Target target in targets.keys) {
+                    if (target.matches(p_url)) {
+                        foreach (uint ruleset_id in targets.get(target)) {
+                            if (!rulesets.has_key(ruleset_id))
+                                load_ruleset(ruleset_id);
+                            rs = rulesets.get(ruleset_id);
+                        }
+                        if (cache.size >= Context.CACHE_SIZE)
+                            cache.remove_at(Context.CACHE_SIZE-1);
+                        cache.add(target);
+                        break;
+                    }
+                }
+            }
+
             if (rs == null) {
                 last_rewrite_state = RewriteResult.NO_RULESET;
                 return p_url;
