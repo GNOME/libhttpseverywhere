@@ -143,20 +143,20 @@ namespace HTTPSEverywhere {
          */
         public string rewrite(string url)
                 requires(initialized) {
-            string p_url = url;
+            string url_copy = url;
 
-            if (!p_url.has_prefix("http://"))
-                return p_url;
+            if (!url_copy.has_prefix("http://"))
+                return url_copy;
 
-            if (p_url.has_prefix("http://") && !p_url.has_suffix("/")) {
-                var rep = p_url.replace("/","");
-                if (p_url.length - rep.length <= 2)
-                    p_url += "/";
+            if (url_copy.has_prefix("http://") && !url_copy.has_suffix("/")) {
+                var rep = url_copy.replace("/","");
+                if (url_copy.length - rep.length <= 2)
+                    url_copy += "/";
             }
             Ruleset? rs = null;
 
             foreach (Target target in this.cache) {
-                if (target.matches(p_url)) {
+                if (target.matches(url_copy)) {
                     foreach (uint ruleset_id in targets.get(target)) {
                         if (!rulesets.has_key(ruleset_id))
                             load_ruleset(ruleset_id);
@@ -168,7 +168,7 @@ namespace HTTPSEverywhere {
 
             if (rs == null) {
                 foreach (Target target in targets.keys) {
-                    if (target.matches(p_url)) {
+                    if (target.matches(url_copy)) {
                         foreach (uint ruleset_id in targets.get(target)) {
                             if (!rulesets.has_key(ruleset_id))
                                 load_ruleset(ruleset_id);
@@ -184,11 +184,11 @@ namespace HTTPSEverywhere {
 
             if (rs == null) {
                 last_rewrite_state = RewriteResult.NO_RULESET;
-                return p_url;
+                return url_copy;
             } else {
                 last_rewrite_state = RewriteResult.NO_MATCH;
-                string rurl = rs.rewrite(p_url);
-                if (p_url.has_prefix("https://"))
+                string rurl = rs.rewrite(url_copy);
+                if (url_copy.has_prefix("https://"))
                     last_rewrite_state = RewriteResult.OK;
                 return rs.rewrite(rurl);
             }
