@@ -53,6 +53,7 @@ httpseverywhere_test_source = [
 
 add_global_arguments('-w', language:'c')
 
+# Needed for include_directories below
 run_command ('mkdir', meson.current_build_dir()+'/httpseverywhere-'+api)
 
 httpseverywhere_lib = shared_library('httpseverywhere-'+api, httpseverywhere_lib_source,
@@ -93,8 +94,20 @@ pkgconfig.generate(libraries : httpseverywhere_lib,
                    description : 'A library to rewrite HTTP URLs to HTTPS URLs.',
                    install: true)
 
-install_headers(meson.current_build_dir()+'/httpseverywhere-'+api+'/httpseverywhere.h', subdir: 'httpseverywhere-'+api)
-install_subdir(meson.current_build_dir()+'/devhelp/httpseverywhere-'+api+'/httpseverywhere-'+api, install_dir: get_option('datadir')+'/devhelp/books')
+# Create an empty httpseverywhere.h file in the build dir to satisfy
+# install_headers that the file exists. This is needed because of
+# https://github.com/mesonbuild/meson/issues/1158
+httpseverywhere_h = meson.current_build_dir()+'/httpseverywhere-'+api+'/httpseverywhere.h'
+run_command ('touch', httpseverywhere_h)
+install_headers(httpseverywhere_h, subdir: 'httpseverywhere-'+api)
+
+# Create an empty httpseverywhere.h file in the build dir to satisfy
+# install_headers that the file exists. This is needed because of
+# https://github.com/mesonbuild/meson/issues/1158
+httpseverywhere_vapi = meson.current_build_dir()+'/httpseverywhere-'+api+'.vapi'
+run_command ('touch', httpseverywhere_vapi)
+install_data(httpseverywhere_vapi, install_dir: get_option('datadir') + '/vala/vapi')
+
+install_data('data/rulesets.json', install_dir: get_option('datadir') + '/libhttpseverywhere')
 install_data('httpseverywhere-'+api+'.deps', install_dir: get_option('datadir') + '/vala/vapi')
-install_data(meson.current_build_dir()+'/httpseverywhere-'+api+'.vapi', install_dir: get_option('datadir') + '/vala/vapi')
-install_data(meson.current_source_dir()+'/data/rulesets.json', install_dir: get_option('datadir') + '/libhttpseverywhere')
+install_subdir(meson.current_build_dir()+'/devhelp/httpseverywhere-'+api+'/httpseverywhere-'+api, install_dir: get_option('datadir')+'/devhelp/books')
