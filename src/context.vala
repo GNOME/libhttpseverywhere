@@ -41,7 +41,7 @@ namespace HTTPSEverywhere {
 
         // Cache for recently used targets
         private Gee.ArrayList<Target> cache;
-        private const int CACHE_SIZE = 20;
+        private const int CACHE_SIZE = 100;
 
         /**
          * Indicates whether the library has been successfully
