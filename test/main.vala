@@ -143,6 +143,28 @@ namespace HTTPSEverywhereTest {
                 url  = "http://www.dl.ed.gov/";
                 assert (ruleset.rewrite(url) == "https://www.dl.ed.gov/");
             });
+
+            Test.add_func("/httpseverywhere/context/ignore", () => {
+                var context = new Context();
+                var m = new MainLoop();
+                context.init.begin(null, (obj, res) => {
+                    try {
+                        context.init.end(res);
+                        var result = context.rewrite("http://amnesty.org.pl");
+                        assert(result.has_prefix("https://"));
+                        context.ignore_ruleset(1009);
+                        result = context.rewrite("http://amnesty.org.pl");
+                        assert(result.has_prefix("http://"));
+                        context.unignore_ruleset(1009);
+                        result = context.rewrite("http://amnesty.org.pl");
+                        assert(result.has_prefix("https://"));
+                        m.quit();
+                    } catch (Error e) {
+                        GLib.assert_not_reached();
+                    }
+                });
+                m.run();
+            });
         }
     }
 }

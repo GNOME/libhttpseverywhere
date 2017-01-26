@@ -43,6 +43,9 @@ namespace HTTPSEverywhere {
         private Gee.ArrayList<Target> cache;
         private const int CACHE_SIZE = 100;
 
+        // List of RulesetIds that are to be ignored
+        private Gee.ArrayList<uint> ignore_list;
+
         /**
          * Indicates whether the library has been successfully
          * initialized. Be careful: this property will become //false//
@@ -86,6 +89,8 @@ namespace HTTPSEverywhere {
             targets = new Gee.HashMap<Target,Gee.ArrayList<uint>>();
             rulesets = new Gee.HashMap<int, Ruleset>();
             cache = new Gee.ArrayList<Target>();
+
+            ignore_list = new Gee.ArrayList<uint>();
 
             var datapaths = new Gee.ArrayList<string>();
 
@@ -158,8 +163,12 @@ namespace HTTPSEverywhere {
             foreach (Target target in this.cache) {
                 if (target.matches(url_copy)) {
                     foreach (uint ruleset_id in targets.get(target)) {
+                        if (ruleset_id in this.ignore_list)
+                            continue;
+
                         if (!rulesets.has_key(ruleset_id))
                             load_ruleset(ruleset_id);
+
                         rs = rulesets.get(ruleset_id);
                     }
                     break;
@@ -170,8 +179,12 @@ namespace HTTPSEverywhere {
                 foreach (Target target in targets.keys) {
                     if (target.matches(url_copy)) {
                         foreach (uint ruleset_id in targets.get(target)) {
+                            if (ruleset_id in this.ignore_list)
+                                continue;
+
                             if (!rulesets.has_key(ruleset_id))
                                 load_ruleset(ruleset_id);
+
                             rs = rulesets.get(ruleset_id);
                         }
                         if (cache.size >= Context.CACHE_SIZE)
@@ -204,6 +217,21 @@ namespace HTTPSEverywhere {
                 if (target.matches(url))
                     return true;
             return false;
+        }
+
+        /**
+         * Tells this context to ignore the ruleset with the given id
+         */
+        public void ignore_ruleset(uint id) {
+            this.ignore_list.add(id);
+        }
+
+        /**
+         * Tells this context to check for a previously ignored ruleset again
+         */
+        public void unignore_ruleset(uint id) {
+            if (id in this.ignore_list)
+                this.ignore_list.remove(id);
         }
 
         /**
