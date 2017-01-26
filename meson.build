@@ -69,7 +69,7 @@ httpseverywhere_test = executable('httpseverywhere_test', httpseverywhere_test_s
 
 g_ir_compiler = find_program('g-ir-compiler')
 custom_target('httpseverywhere-typelib',
-               command: [g_ir_compiler, '--output', '@OUTPUT@', 'HTTPSEverywhere-' + api + '.gir', '--shared-library', get_option('prefix') + '/' + get_option('libdir') + '/libhttpseverywhere-' + api + '.so'],
+               command: [g_ir_compiler, '--output', '@OUTPUT@', 'HTTPSEverywhere-' + api + '.gir', '--shared-library', 'libhttpseverywhere-' + api + '.so'],
                output: 'HTTPSEverywhere-' + api + '.typelib',
                depends: httpseverywhere_lib,
                install: true,
