@@ -9,7 +9,7 @@ build:
   # instead of calling g++ directly you can also use some build toolkit like make
   # install the necessary build tools when needed
   before_script: 
-    - sudo apt update && sudo apt -y install meson valac gobject-introspection valadoc libgirepository1.0-dev libjson-glib-dev libxml2-dev libsoup2.4-dev
+    - sudo apt update && sudo apt -y install meson valac gobject-introspection valadoc libgirepository1.0-dev libjson-glib-dev libxml2-dev libsoup2.4-dev libgee-dev libarchive-dev
   script: 
     - mkdir build && cd build && meson .. && ninja
     - ./httpseverywhere_test
