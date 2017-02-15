@@ -152,10 +152,10 @@ namespace HTTPSEverywhereTest {
                         context.init.end(res);
                         var result = context.rewrite("http://amnesty.org.pl");
                         assert(result.has_prefix("https://"));
-                        context.ignore_ruleset(1009);
+                        context.ignore_ruleset(1020);
                         result = context.rewrite("http://amnesty.org.pl");
                         assert(result.has_prefix("http://"));
-                        context.unignore_ruleset(1009);
+                        context.unignore_ruleset(1020);
                         result = context.rewrite("http://amnesty.org.pl");
                         assert(result.has_prefix("https://"));
                         m.quit();
