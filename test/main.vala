@@ -150,13 +150,13 @@ namespace HTTPSEverywhereTest {
                 context.init.begin(null, (obj, res) => {
                     try {
                         context.init.end(res);
-                        var result = context.rewrite("http://amnesty.org.pl");
+                        var result = context.rewrite("http://power.freenet.de");
                         assert(result.has_prefix("https://"));
-                        context.ignore_ruleset(1020);
-                        result = context.rewrite("http://amnesty.org.pl");
+                        context.ignore_ruleset(6227);
+                        result = context.rewrite("http://power.freenet.de");
                         assert(result.has_prefix("http://"));
-                        context.unignore_ruleset(1020);
-                        result = context.rewrite("http://amnesty.org.pl");
+                        context.unignore_ruleset(6227);
+                        result = context.rewrite("http://power.freenet.de");
                         assert(result.has_prefix("https://"));
                         m.quit();
                     } catch (Error e) {
