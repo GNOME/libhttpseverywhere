@@ -23,14 +23,14 @@ project ('httpseverywhere', 'vala','c')
 
 pkgconfig = import('pkgconfig')
 
-api = '0.2'
+api = '0.4'
 
 # This isn't libtool. To keep things simple, we can use the same version
 # number for the soname as our actual version. But it requires that we
 # generally follow libtool semantics: bump the first version whenever
 # breaking ABI, bump the second version whenever adding new API, bump
 # the third version for every release.
-libhttpseverywhere_version = '0.2.10'
+libhttpseverywhere_version = '0.4.0'
 
 glib = dependency('glib-2.0')
 gobject = dependency('gobject-2.0')
