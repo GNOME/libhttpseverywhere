@@ -25,6 +25,9 @@
  * to convert http-URLs into https-URLs.
  */
 namespace HTTPSEverywhere {
+    public errordomain ContextError {
+        NOT_IMPLEMENTED
+    }
 
     private const string rulesets_file = "rulesets.json";
 
@@ -232,6 +235,20 @@ namespace HTTPSEverywhere {
         public void unignore_ruleset(uint id) {
             if (id in this.ignore_list)
                 this.ignore_list.remove(id);
+        }
+
+        /**
+         * Tells this context to ignore the given host
+         */
+        public void ignore_host(string host) {
+            throw new ContextError.NOT_IMPLEMENTED("Context.ignore_host ist not implemented yet.");
+        }
+
+        /**
+         * Tells this context to check for a previously ignored host again
+         */
+        public void unignore_host(string host) {
+            throw new ContextError.NOT_IMPLEMENTED("Context.unignore_host ist not implemented yet.");
         }
 
         /**
