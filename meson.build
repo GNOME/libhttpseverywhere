@@ -19,7 +19,7 @@
 # If not, see http://www.gnu.org/licenses/.
 #*********************************************************************
 
-project ('httpseverywhere', 'vala','c')
+project('httpseverywhere', 'vala', 'c', meson_version : '>=0.39.1')
 
 pkgconfig = import('pkgconfig')
 
@@ -51,25 +51,22 @@ httpseverywhere_test_source = [
     'test/main.vala'
 ]
 
-add_global_arguments('-w', language:'c')
-
-# Needed for include_directories below
-run_command ('mkdir', meson.current_build_dir()+'/httpseverywhere-'+api)
+valagir = 'HTTPSEverywhere-' + api + '.gir'
 
 httpseverywhere_lib = shared_library('httpseverywhere-'+api, httpseverywhere_lib_source,
                                      dependencies: [glib, gobject, json_glib, libxml, soup, gio, gee, archive],
-                                     vala_args: ['--gir=' + '../HTTPSEverywhere-'+api+'.gir', '-H', 'httpseverywhere-'+api+'/httpseverywhere.h'],
+                                     vala_gir: valagir,
+                                     vala_header: 'httpseverywhere.h',
                                      install: true,
                                      version: libhttpseverywhere_version)
 
 httpseverywhere_test = executable('httpseverywhere_test', httpseverywhere_test_source,
                                   dependencies: [glib, gobject, gio, gee, libxml],
-                                  include_directories: include_directories('@0@/httpseverywhere-@1@'.format(meson.current_build_dir(), api)),
                                   link_with: httpseverywhere_lib)
 
 g_ir_compiler = find_program('g-ir-compiler')
 custom_target('httpseverywhere-typelib',
-               command: [g_ir_compiler, '--output', '@OUTPUT@', 'HTTPSEverywhere-' + api + '.gir', '--shared-library', 'libhttpseverywhere-' + api + '.so'],
+               command: [g_ir_compiler, '--output', '@OUTPUT@', valagir, '--shared-library', 'libhttpseverywhere-' + api + '.so'],
                output: 'HTTPSEverywhere-' + api + '.typelib',
                depends: httpseverywhere_lib,
                install: true,
@@ -95,15 +92,15 @@ pkgconfig.generate(libraries : httpseverywhere_lib,
                    install: true)
 
 # Create an empty httpseverywhere.h file in the build dir to satisfy
-# install_headers that the file exists. This is needed because of
-# https://github.com/mesonbuild/meson/issues/1158
-httpseverywhere_h = meson.current_build_dir()+'/httpseverywhere-'+api+'/httpseverywhere.h'
+# install_headers that the file exists. Remove when this PR is merged:
+# https://github.com/mesonbuild/meson/pull/1469
+httpseverywhere_h = meson.current_build_dir()+'/httpseverywhere.h'
 run_command ('touch', httpseverywhere_h)
 install_headers(httpseverywhere_h, subdir: 'httpseverywhere-'+api)
 
-# Create an empty httpseverywhere.h file in the build dir to satisfy
-# install_headers that the file exists. This is needed because of
-# https://github.com/mesonbuild/meson/issues/1158
+# Create an empty httpseverywhere.vapi file in the build dir to satisfy
+# install_data that the file exists. Remove when this PR is merged:
+# https://github.com/mesonbuild/meson/pull/1469
 httpseverywhere_vapi = meson.current_build_dir()+'/httpseverywhere-'+api+'.vapi'
 run_command ('touch', httpseverywhere_vapi)
 install_data(httpseverywhere_vapi, install_dir: get_option('datadir') + '/vala/vapi')
