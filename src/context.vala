@@ -224,6 +224,7 @@ namespace HTTPSEverywhere {
 
         /**
          * Tells this context to ignore the ruleset with the given id
+         * @since 0.4
          */
         public void ignore_ruleset(uint id) {
             this.ignore_list.add(id);
@@ -231,6 +232,7 @@ namespace HTTPSEverywhere {
 
         /**
          * Tells this context to check for a previously ignored ruleset again
+         * @since 0.4
          */
         public void unignore_ruleset(uint id) {
             if (id in this.ignore_list)
@@ -239,6 +241,7 @@ namespace HTTPSEverywhere {
 
         /**
          * Tells this context to ignore the given host
+         * @since 0.4
          */
         public void ignore_host(string host) {
             throw new ContextError.NOT_IMPLEMENTED("Context.ignore_host ist not implemented yet.");
@@ -246,6 +249,7 @@ namespace HTTPSEverywhere {
 
         /**
          * Tells this context to check for a previously ignored host again
+         * @since 0.4
          */
         public void unignore_host(string host) {
             throw new ContextError.NOT_IMPLEMENTED("Context.unignore_host ist not implemented yet.");
