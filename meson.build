@@ -19,7 +19,7 @@
 # If not, see http://www.gnu.org/licenses/.
 #*********************************************************************
 
-project('httpseverywhere', 'vala', 'c', meson_version : '>=0.39.1')
+project('httpseverywhere', 'vala', 'c', meson_version : '>=0.39.1', license: 'LGPL')
 
 pkgconfig = import('pkgconfig')
 
