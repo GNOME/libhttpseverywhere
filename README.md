@@ -59,19 +59,10 @@ Italics are valid debian package names.
 Clone and build the library as follows:
 
 ```
-$ git clone https://github.com/grindhold/libhttpseverywhere
+$ git clone https://git.gnome.org/browse/libhttpseverywhere
 $ cd libhttpseverywhere
-$ mkdir build
-$ cd build
-$ meson ..
+$ meson build && cd build
 $ ninja
-```
-
-If you want to build the documentation, you'll currently have
-to explicitly build it due to a bug in meson since 0.35.0:
-
-```
-$ ninja devhelp
 ```
 
 If you desire to install the library, execute:

@@ -73,13 +73,15 @@ custom_target('httpseverywhere-typelib',
                install_dir: get_option('libdir') + '/girepository-1.0')
 
 if get_option('enable_valadoc')
-	valadoc = find_program('valadoc', required=false)
+	valadoc = find_program('valadoc')
 	custom_target('apidocs',
                    input: httpseverywhere_lib_source,
                    command: [valadoc, '-o', 'devhelp/httpseverywhere-'+api, '--doclet', 'devhelp', '@INPUT@',
                    '--force', '--pkg', 'gee-0.8', '--pkg', 'json-glib-1.0', '--pkg', 'libxml-2.0', '--pkg', 'libarchive', '--pkg', 'libsoup-2.4'],
                    output: 'devhelp',
-	)
+                   build_by_default: true)
+  install_subdir(meson.current_build_dir()+'/devhelp/httpseverywhere-'+api+'/httpseverywhere-'+api,
+                 install_dir: get_option('datadir')+'/devhelp/books')
 endif
 
 pkgconfig.generate(libraries : httpseverywhere_lib,
@@ -107,4 +109,3 @@ install_data(httpseverywhere_vapi, install_dir: get_option('datadir') + '/vala/v
 
 install_data('data/rulesets.json', install_dir: get_option('datadir') + '/libhttpseverywhere')
 install_data('httpseverywhere-'+api+'.deps', install_dir: get_option('datadir') + '/vala/vapi')
-install_subdir(meson.current_build_dir()+'/devhelp/httpseverywhere-'+api+'/httpseverywhere-'+api, install_dir: get_option('datadir')+'/devhelp/books')
