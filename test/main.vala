@@ -152,10 +152,10 @@ namespace HTTPSEverywhereTest {
                         context.init.end(res);
                         var result = context.rewrite("http://okfn.org");
                         assert(result.has_prefix("https://"));
-                        context.ignore_ruleset(12189);
+                        context.ignore_ruleset(12139);
                         result = context.rewrite("http://okfn.org");
                         assert(result.has_prefix("http://"));
-                        context.unignore_ruleset(12189);
+                        context.unignore_ruleset(12139);
                         result = context.rewrite("http://okfn.org");
                         assert(result.has_prefix("https://"));
                         m.quit();
