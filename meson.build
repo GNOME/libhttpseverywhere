@@ -30,7 +30,7 @@ api = '0.4'
 # generally follow libtool semantics: bump the first version whenever
 # breaking ABI, bump the second version whenever adding new API, bump
 # the third version for every release.
-libhttpseverywhere_version = '0.4.4'
+libhttpseverywhere_version = '0.4.5'
 
 glib = dependency('glib-2.0')
 gobject = dependency('gobject-2.0')
