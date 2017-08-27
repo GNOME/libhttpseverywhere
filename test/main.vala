@@ -56,7 +56,9 @@ namespace HTTPSEverywhereTest {
                 m.run();
             });
 
-            Test.add_func("/httpseverywhere/context/cancel_init", () => {
+            // TODO: check wheter xml-parser may be used asnychronously
+            //       if yes, reactivate. if not remove this test
+            /*Test.add_func("/httpseverywhere/context/cancel_init", () => {
                 var loop = new MainLoop();
                 var context = new Context();
                 var cancellable = new Cancellable();
@@ -74,7 +76,7 @@ namespace HTTPSEverywhereTest {
 
                 cancellable.cancel();
                 loop.run();
-            });
+            });*/
 
             Test.add_func("/httpseverywhere/context/rewrite_before_init", () => {
                 if (Test.subprocess()) {
@@ -142,28 +144,6 @@ namespace HTTPSEverywhereTest {
 
                 url  = "http://www.dl.ed.gov/";
                 assert (ruleset.rewrite(url) == "https://www.dl.ed.gov/");
-            });
-
-            Test.add_func("/httpseverywhere/context/ignore", () => {
-                var context = new Context();
-                var m = new MainLoop();
-                context.init.begin(null, (obj, res) => {
-                    try {
-                        context.init.end(res);
-                        var result = context.rewrite("http://forums.lemonde.fr");
-                        assert(result.has_prefix("https://"));
-                        context.ignore_ruleset(9204);
-                        result = context.rewrite("http://forums.lemonde.fr");
-                        assert(result.has_prefix("http://"));
-                        context.unignore_ruleset(9204);
-                        result = context.rewrite("http://forums.lemonde.fr");
-                        assert(result.has_prefix("https://"));
-                        m.quit();
-                    } catch (Error e) {
-                        GLib.assert_not_reached();
-                    }
-                });
-                m.run();
             });
         }
     }

@@ -34,7 +34,6 @@ libhttpseverywhere_version = '0.4.8'
 
 glib = dependency('glib-2.0')
 gobject = dependency('gobject-2.0')
-json_glib = dependency('json-glib-1.0')
 libxml = dependency('libxml-2.0')
 soup = dependency('libsoup-2.4')
 gio = dependency('gio-2.0')
@@ -54,7 +53,7 @@ httpseverywhere_test_source = [
 valagir = 'HTTPSEverywhere-' + api + '.gir'
 
 httpseverywhere_lib = shared_library('httpseverywhere-'+api, httpseverywhere_lib_source,
-                                     dependencies: [glib, gobject, json_glib, libxml, soup, gio, gee, archive],
+                                     dependencies: [glib, gobject, libxml, soup, gio, gee, archive],
                                      vala_gir: valagir,
                                      vala_header: 'httpseverywhere.h',
                                      install: true,
@@ -107,5 +106,5 @@ httpseverywhere_vapi = meson.current_build_dir()+'/httpseverywhere-'+api+'.vapi'
 run_command ('touch', httpseverywhere_vapi)
 install_data(httpseverywhere_vapi, install_dir: get_option('datadir') + '/vala/vapi')
 
-install_data('data/rulesets.json', install_dir: get_option('datadir') + '/libhttpseverywhere')
+install_data('data/default.rulesets', install_dir: get_option('datadir') + '/libhttpseverywhere')
 install_data('httpseverywhere-'+api+'.deps', install_dir: get_option('datadir') + '/vala/vapi')
