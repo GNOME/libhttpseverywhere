@@ -126,6 +126,8 @@ namespace HTTPSEverywhere {
                     bool success = false;
 
                     foreach (string dp in datapaths) {
+                        if (!FileUtils.test(dp, FileTest.EXISTS))
+                            continue;
                         this.ruleset_xml = Xml.Parser.parse_file(dp);
                         if (this.ruleset_xml == null)
                             continue;
