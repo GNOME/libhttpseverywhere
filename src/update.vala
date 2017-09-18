@@ -189,7 +189,7 @@ namespace HTTPSEverywhere {
             string json = "";
             unowned Archive.Entry e = null;
             while (zipreader.next_header(out e) == Archive.Result.OK) {
-                if (e != null && e.pathname() == "chrome/content/rulesets.json") {
+                if (e != null && e.pathname() == "webextension/rules/default.rulesets") {
                     uint8[] jsonblock = new uint8[1024*1024];
                     while (true) {
                         var r = zipreader.read_data(jsonblock, 1024*1024);
