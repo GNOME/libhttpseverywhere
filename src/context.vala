@@ -80,52 +80,75 @@ namespace HTTPSEverywhere {
          * Create a new library context object.
          */
         public Context() {
+            try {
+                new Thread<int>.try("rulesets", this.init);
+            } catch (Error e) {
+                warning("Could not initialize HTTPSEverywhere: %s", e.message);
+            }
         }
+
+        /**
+         * Initialization finished
+         *
+         * This signal is being triggered when all ruesets have
+         * been loaded into memory and the context can subsequently
+         * be asked to perform queries on HTTPSEverywheres data.
+         */
+        public signal void rdy(Error? e);
 
         /**
          * This function initializes HTTPSEverywhere by loading
          * the rulesets from the filesystem.
          */
-        public async void init(Cancellable? cancellable = null) throws IOError {
-            initialized = false;
+        private int init() {
+            lock (this.initialized) {
+                IOError e;
+                try {
+                    initialized = false;
 
-            targets = new Gee.HashMap<Target,Gee.ArrayList<uint>>();
-            rulesets = new Gee.HashMap<int, Ruleset>();
-            cache = new Gee.ArrayList<Target>();
+                    targets = new Gee.HashMap<Target,Gee.ArrayList<uint>>();
+                    rulesets = new Gee.HashMap<int, Ruleset>();
+                    cache = new Gee.ArrayList<Target>();
 
-            ignore_list = new Gee.ArrayList<uint>();
+                    ignore_list = new Gee.ArrayList<uint>();
 
-            var datapaths = new Gee.ArrayList<string>();
+                    var datapaths = new Gee.ArrayList<string>();
 
-            // Specify the paths to search for rules in
-            datapaths.add(Path.build_filename(Environment.get_user_data_dir(),
-                                              "libhttpseverywhere", rulesets_file));
-            foreach (string dp in Environment.get_system_data_dirs())
-                datapaths.add(Path.build_filename(dp, "libhttpseverywhere", rulesets_file));
+                    // Specify the paths to search for rules in
+                    datapaths.add(Path.build_filename(Environment.get_user_data_dir(),
+                                                      "libhttpseverywhere", rulesets_file));
+                    foreach (string dp in Environment.get_system_data_dirs())
+                        datapaths.add(Path.build_filename(dp, "libhttpseverywhere", rulesets_file));
 
-            // local rules in repo dir to test data without installation
-            datapaths.add(Path.build_filename(Environment.get_current_dir(), "..", "data", rulesets_file));
+                    // local rules in repo dir to test data without installation
+                    datapaths.add(Path.build_filename(Environment.get_current_dir(), "..", "data", rulesets_file));
 
-            bool success = false;
+                    bool success = false;
 
-            foreach (string dp in datapaths) {
-                this.ruleset_xml = Xml.Parser.parse_file(dp);
-                if (this.ruleset_xml == null)
-                    continue;
-                success = true;
-                break;
+                    foreach (string dp in datapaths) {
+                        this.ruleset_xml = Xml.Parser.parse_file(dp);
+                        if (this.ruleset_xml == null)
+                            continue;
+                        success = true;
+                        break;
+                    }
+                    if (!success) {
+                        string locations = "\n";
+                        foreach (string location in datapaths)
+                            locations += "%s\n".printf(location);
+                        critical("Could not find any suitable database in the following locations:%s",
+                                 locations);
+                        return 1;
+                    }
+                    this.load_rulesets();
+                    initialized = true;
+                } catch (IOError e) {
+                    GLib.Idle.add(()=>{this.rdy(e); return false;});
+                    return 1;
+                }
             }
-            if (!success) {
-                string locations = "\n";
-                foreach (string location in datapaths)
-                    locations += "%s\n".printf(location);
-                critical("Could not find any suitable database in the following locations:%s",
-                         locations);
-                return;
-            }
-
-            load_rulesets();
-            initialized = true;
+            GLib.Idle.add(()=>{this.rdy(null); return false;});
+            return 0;
         }
 
         /**

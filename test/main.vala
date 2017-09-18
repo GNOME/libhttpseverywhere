@@ -42,9 +42,11 @@ namespace HTTPSEverywhereTest {
             Test.add_func("/httpseverywhere/context/rewrite", () => {
                 var context = new Context();
                 var m = new MainLoop();
-                context.init.begin(null, (obj, res) => {
+                context.rdy.connect((e) => {
+                    if (e != null) {
+                        GLib.assert_not_reached();
+                    }
                     try {
-                        context.init.end(res);
                         var result = context.rewrite("http://example.com");
                         assert(result == "http://example.com/" || result == "https://example.com/");
                         assert(context.has_https("http://example.com") == result.has_prefix("https://"));
@@ -55,28 +57,6 @@ namespace HTTPSEverywhereTest {
                 });
                 m.run();
             });
-
-            // TODO: check wheter xml-parser may be used asnychronously
-            //       if yes, reactivate. if not remove this test
-            /*Test.add_func("/httpseverywhere/context/cancel_init", () => {
-                var loop = new MainLoop();
-                var context = new Context();
-                var cancellable = new Cancellable();
-
-                context.init.begin(cancellable, (obj, res) => {
-                    try {
-                        context.init.end(res);
-                        assert_not_reached();
-                    } catch (Error e) {
-                        assert(e is IOError.CANCELLED);
-                        assert(cancellable.is_cancelled());
-                        loop.quit();
-                    }
-                });
-
-                cancellable.cancel();
-                loop.run();
-            });*/
 
             Test.add_func("/httpseverywhere/context/rewrite_before_init", () => {
                 if (Test.subprocess()) {
