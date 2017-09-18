@@ -257,7 +257,7 @@ namespace HTTPSEverywhere {
                 if (cn->type != Xml.ElementType.ELEMENT_NODE || cn->name != "ruleset")
                     continue;
                 try {
-                    var rs = new Ruleset.from_xml(root);
+                    var rs = new Ruleset.from_xml(cn);
                     rulesets.@set(++id, rs);
                     foreach (Target target in rs.targets) {
                         if (this.targets.has_key(target)) {
