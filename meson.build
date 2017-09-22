@@ -107,5 +107,5 @@ httpseverywhere_vapi = meson.current_build_dir()+'/httpseverywhere-'+api+'.vapi'
 run_command ('touch', httpseverywhere_vapi)
 install_data(httpseverywhere_vapi, install_dir: get_option('datadir') + '/vala/vapi')
 
-install_data('data/rulesets.json', install_dir: get_option('datadir') + '/libhttpseverywhere')
+install_data('data/default.rulesets', install_dir: get_option('datadir') + '/libhttpseverywhere')
 install_data('httpseverywhere-'+api+'.deps', install_dir: get_option('datadir') + '/vala/vapi')
