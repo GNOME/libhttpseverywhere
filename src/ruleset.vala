@@ -45,7 +45,8 @@ namespace HTTPSEverywhere {
         private Gee.ArrayList<Rule> rules;
         private Gee.ArrayList<Regex> exclusions;
         private Gee.ArrayList<Target> _targets;
-        private string securecookie;
+        // TODO: implement
+        //private string securecookie;
 
         /**
          * The target-hosts this ruleset applies to
@@ -68,63 +69,48 @@ namespace HTTPSEverywhere {
         /**
          * Creates a Ruleset from a ruleset file
          */
-        public Ruleset.from_xml(Xml.Node* root) throws RulesetError {
+        public Ruleset.from_json(Json.Node root) throws RulesetError {
             this();
-            if (root->name != "ruleset")
-                throw new RulesetError.PARSE_ERROR("Name of rootnode must be 'ruleset'");
+            var obj = root.get_object();
 
             // Set the Rulesets attributes
-            string? n = root->get_prop("name");
-            string? m;
-            if (n != null)
-                this.name = n;
-            n = root->get_prop("default_off");
-            this.default_off = n != null;
-            n = root->get_prop("platform");
-            if (n != null)
-                this.platform = n;
+            this.name = obj.has_member("name") ? obj.get_string_member("name") : null;
+            this.default_off = obj.has_member("default_off");
+            this.platform = obj.has_member("platform") ? obj.get_string_member("platform") : null;
 
-            for (Xml.Node* cn = root->children; cn != null; cn = cn->next) {
-                if (cn->type != Xml.ElementType.ELEMENT_NODE)
-                    continue;
-                switch (cn->name) {
-                    case "rule":
-                        n = cn->get_prop("from");
-                        m = cn->get_prop("to");
-                        if (n == null || m == null)
-                            warning("Skipped malformed rule");
-                        else
-                            this.add_rule(n,m);
-                        break;
-                    case "target":
-                        n = cn->get_prop("host");
-                        if (n != null)
-                            this.add_target(n);
-                        else
-                            warning("Skipped malformed target");
-                        break;
-                    case "exclusion":
-                        n = cn->get_prop("pattern");
-                        if (n != null)
-                            this.add_exclusion(n);
-                        else
-                            warning("Skipped malformed exclusion");
-                        break;
-                    case "securecookie":
-                        n = cn->get_prop("host");
-                        if (n != null)
-                            this.securecookie =  n;
-                        else
-                            warning("Skipped malformed securecookie");
-                        break;
-                    case "test":
-                        // TODO: implement
-                        break;
-                    default:
-                        warning("Unknown node found: %s".printf(cn->name));
-                        break;
-                }
+            if (obj.has_member("rule")) {
+                var rules = obj.get_array_member("rule");
+                rules.foreach_element((_,i,e)=>{
+                    string? from = null;
+                    string? to = null;
+                    var rule = e.get_object();
+                    from = rule.get_string_member("from");
+                    to = rule.get_string_member("to");
+                    if (from == null || to == null)
+                        warning("Skipped malformed rule");
+                    else
+                        this.add_rule(from, to);
+                });
             }
+
+            if (obj.has_member("target")) {
+                var targets = obj.get_array_member("target");
+                targets.foreach_element((_, i, e) => {
+                    if (e.get_node_type() == Json.NodeType.VALUE) {
+                        this.add_target(e.get_string());
+                    }
+                });
+            }
+
+            if (obj.has_member("exclusion")) {
+                var exclusions = obj.get_array_member("exclusion");
+                exclusions.foreach_element((_, i, e) => {
+                    if (e.get_node_type() == Json.NodeType.VALUE) {
+                        this.add_exclusion(e.get_string());
+                    }
+                });
+            }
+            // TODO: implement securecookies
         }
 
         /**

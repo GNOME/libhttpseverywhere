@@ -321,7 +321,9 @@ namespace HTTPSEverywhere {
             Xml.Node* root = doc->get_root_element();
             if (root != null) {
                 try {
-                    var rs = new Ruleset.from_xml(root);
+                    // TODO: use Ruleset.from_json
+                    //var rs = new Ruleset.from_xml(root);
+                    var rs = new Ruleset();
                     rulesets.set(id, rs);
                 } catch (RulesetError e) {
                 }
