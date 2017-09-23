@@ -47,7 +47,7 @@ namespace HTTPSEverywhere {
         private const int CACHE_SIZE = 100;
 
         // List of RulesetIds that are to be ignored
-        private Gee.ArrayList<uint> ignore_list;
+        private Gee.ArrayList<string> ignore_list;
 
         /**
          * Indicates whether the library has been successfully
@@ -93,7 +93,7 @@ namespace HTTPSEverywhere {
             rulesets = new Gee.HashMap<int, Ruleset>();
             cache = new Gee.ArrayList<Target>();
 
-            ignore_list = new Gee.ArrayList<uint>();
+            ignore_list = new Gee.ArrayList<string>();
 
             var datapaths = new Gee.ArrayList<string>();
 
@@ -164,11 +164,11 @@ namespace HTTPSEverywhere {
             Ruleset? rs = null;
 
             foreach (Target target in this.cache) {
+                if (target.host in this.ignore_list)
+                    continue;
+
                 if (target.matches(url_copy)) {
                     foreach (uint ruleset_id in targets.get(target)) {
-                        if (ruleset_id in this.ignore_list)
-                            continue;
-
                         rs = rulesets.get(ruleset_id);
                     }
                     break;
@@ -177,11 +177,11 @@ namespace HTTPSEverywhere {
 
             if (rs == null) {
                 foreach (Target target in targets.keys) {
+                    if (target.host in this.ignore_list)
+                        continue;
+
                     if (target.matches(url_copy)) {
                         foreach (uint ruleset_id in targets.get(target)) {
-                            if (ruleset_id in this.ignore_list)
-                                continue;
-
                             rs = rulesets.get(ruleset_id);
                         }
                         if (cache.size >= Context.CACHE_SIZE)
@@ -217,20 +217,24 @@ namespace HTTPSEverywhere {
         }
 
         /**
-         * Tells this context to ignore the ruleset with the given id
+         * Tells once told the context to ignore the ruleset with the given id
+         *
+         * Ruleset IDs are not a valid concept anymore. Do not use this method
+         * It will have no effect.
          * @since 0.4
+         * @deprecated
          */
-        public void ignore_ruleset(uint id) {
-            this.ignore_list.add(id);
-        }
+        public void ignore_ruleset(uint id) {}
 
         /**
          * Tells this context to check for a previously ignored ruleset again
+         *
+         * Ruleset IDs are not a valid concept anymore. Do not use this method
+         * It will have no effect.
          * @since 0.4
+         * @deprecated
          */
         public void unignore_ruleset(uint id) {
-            if (id in this.ignore_list)
-                this.ignore_list.remove(id);
         }
 
         /**
@@ -238,7 +242,7 @@ namespace HTTPSEverywhere {
          * @since 0.4
          */
         public void ignore_host(string host) {
-            throw new ContextError.NOT_IMPLEMENTED("Context.ignore_host ist not implemented yet.");
+            this.ignore_list.add(host);
         }
 
         /**
@@ -246,7 +250,8 @@ namespace HTTPSEverywhere {
          * @since 0.4
          */
         public void unignore_host(string host) {
-            throw new ContextError.NOT_IMPLEMENTED("Context.unignore_host ist not implemented yet.");
+            if (host in this.ignore_list)
+                this.ignore_list.remove(host);
         }
 
         /**

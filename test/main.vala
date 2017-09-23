@@ -152,10 +152,10 @@ namespace HTTPSEverywhereTest {
                         context.init.end(res);
                         var result = context.rewrite("http://forums.lemonde.fr");
                         assert(result.has_prefix("https://"));
-                        context.ignore_ruleset(9204);
+                        context.ignore_host("forums.lemonde.fr");
                         result = context.rewrite("http://forums.lemonde.fr");
                         assert(result.has_prefix("http://"));
-                        context.unignore_ruleset(9204);
+                        context.unignore_host("forums.lemonde.fr");
                         result = context.rewrite("http://forums.lemonde.fr");
                         assert(result.has_prefix("https://"));
                         m.quit();
