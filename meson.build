@@ -35,7 +35,6 @@ libhttpseverywhere_version = '0.4.8'
 glib = dependency('glib-2.0')
 gobject = dependency('gobject-2.0')
 json_glib = dependency('json-glib-1.0')
-libxml = dependency('libxml-2.0')
 soup = dependency('libsoup-2.4')
 gio = dependency('gio-2.0')
 gee = dependency('gee-0.8')
@@ -54,14 +53,14 @@ httpseverywhere_test_source = [
 valagir = 'HTTPSEverywhere-' + api + '.gir'
 
 httpseverywhere_lib = shared_library('httpseverywhere-'+api, httpseverywhere_lib_source,
-                                     dependencies: [glib, gobject, json_glib, libxml, soup, gio, gee, archive],
+                                     dependencies: [glib, gobject, json_glib, soup, gio, gee, archive],
                                      vala_gir: valagir,
                                      vala_header: 'httpseverywhere.h',
                                      install: true,
                                      version: libhttpseverywhere_version)
 
 httpseverywhere_test = executable('httpseverywhere_test', httpseverywhere_test_source,
-                                  dependencies: [glib, gobject, gio, gee, libxml, json_glib],
+                                  dependencies: [glib, gobject, gio, gee, json_glib],
                                   link_with: httpseverywhere_lib)
 
 g_ir_compiler = find_program('g-ir-compiler')
@@ -77,7 +76,7 @@ if get_option('enable_valadoc')
 	custom_target('apidocs',
                    input: httpseverywhere_lib_source,
                    command: [valadoc, '-o', 'devhelp/httpseverywhere-'+api, '--doclet', 'devhelp', '@INPUT@',
-                   '--force', '--pkg', 'gee-0.8', '--pkg', 'json-glib-1.0', '--pkg', 'libxml-2.0', '--pkg', 'libarchive', '--pkg', 'libsoup-2.4'],
+                   '--force', '--pkg', 'gee-0.8', '--pkg', 'json-glib-1.0', '--pkg', 'libarchive', '--pkg', 'libsoup-2.4'],
                    output: 'devhelp',
                    build_by_default: true)
   install_subdir(meson.current_build_dir()+'/devhelp/httpseverywhere-'+api+'/httpseverywhere-'+api,
@@ -88,7 +87,7 @@ pkgconfig.generate(libraries : httpseverywhere_lib,
                    version : libhttpseverywhere_version,
                    name : 'libhttpseverywhere',
                    filebase : meson.current_build_dir()+'/httpseverywhere-'+api,
-                   requires : 'glib-2.0 gobject-2.0 gio-2.0 json-glib-1.0 libxml-2.0 libsoup-2.4 gee-0.8 libarchive',
+                   requires : 'glib-2.0 gobject-2.0 gio-2.0 json-glib-1.0 libsoup-2.4 gee-0.8 libarchive',
                    subdirs: 'httpseverywhere-'+api,
                    description : 'A library to rewrite HTTP URLs to HTTPS URLs.',
                    install: true)
