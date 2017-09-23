@@ -1,6 +1,8 @@
 libhttpseverywhere
 ==================
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/libhttpseverywhere.svg)](https://repology.org/metapackage/libhttpseverywhere)
+
 This library enables you to leverage the power of
 [HTTPSEverywhere](https://www.eff.org/https-everywhere) to any desktop-application you want
 
@@ -22,7 +24,6 @@ Documentation
 -------------
 
 You can either generate the documentation as a devhelp-book for yourself (see Building-section)
-or you can browse them online: [httpseverywhere-0.2 API docs](http://grindhold.de/httpseverywhere-0.2/)
 
 Dependencies
 ------------
@@ -63,6 +64,13 @@ $ git clone https://git.gnome.org/browse/libhttpseverywhere
 $ cd libhttpseverywhere
 $ meson build && cd build
 $ ninja
+```
+
+If you want to build the documentation, make sure you have valadoc available
+on your system and call meson like this:
+
+```
+meson -Denable_valadoc=true build && cd build
 ```
 
 If you desire to install the library, execute:
