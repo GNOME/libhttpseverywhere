@@ -219,20 +219,20 @@ namespace HTTPSEverywhere {
         /**
          * Tells once told the context to ignore the ruleset with the given id
          *
-         * Ruleset IDs are not a valid concept anymore. Do not use this method
+         * Ruleset IDs are not a valid concept anymore. Do not use this method.
          * It will have no effect.
          * @since 0.4
-         * @deprecated
+         * @deprecated 0.6
          */
         public void ignore_ruleset(uint id) {}
 
         /**
          * Tells this context to check for a previously ignored ruleset again
          *
-         * Ruleset IDs are not a valid concept anymore. Do not use this method
+         * Ruleset IDs are not a valid concept anymore. Do not use this method.
          * It will have no effect.
          * @since 0.4
-         * @deprecated
+         * @deprecated 0.6
          */
         public void unignore_ruleset(uint id) {
         }
