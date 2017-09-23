@@ -29,7 +29,7 @@ namespace HTTPSEverywhere {
         NOT_IMPLEMENTED
     }
 
-    private const string rulesets_file = "rulesets.json";
+    private const string rulesets_file = "default.rulesets";
 
     /**
      * The library context object. Most applications will only need to create a
@@ -133,7 +133,7 @@ namespace HTTPSEverywhere {
                 return;
             }
 
-            load_targets();
+            load_rulesets();
             initialized = true;
         }
 
@@ -169,9 +169,6 @@ namespace HTTPSEverywhere {
                         if (ruleset_id in this.ignore_list)
                             continue;
 
-                        if (!rulesets.has_key(ruleset_id))
-                            load_ruleset(ruleset_id);
-
                         rs = rulesets.get(ruleset_id);
                     }
                     break;
@@ -184,9 +181,6 @@ namespace HTTPSEverywhere {
                         foreach (uint ruleset_id in targets.get(target)) {
                             if (ruleset_id in this.ignore_list)
                                 continue;
-
-                            if (!rulesets.has_key(ruleset_id))
-                                load_ruleset(ruleset_id);
 
                             rs = rulesets.get(ruleset_id);
                         }
@@ -256,82 +250,33 @@ namespace HTTPSEverywhere {
         }
 
         /**
-         * Loads all possible targets into memory
-         */
-        private void load_targets() {
-            Json.Node root = parser.get_root();
-            if (root.get_node_type() != Json.NodeType.OBJECT) {
-                error("Need an object as the rootnode of rulesets.");
-            }
-            var rootobj = root.get_object();
-
-            if (!rootobj.has_member("targets") ||
-                    rootobj.get_member("targets").get_node_type() != Json.NodeType.OBJECT) {
-                error("The root object must have an object with the name 'targets'.");
-            }
-
-            rootobj.get_member("targets").get_object().foreach_member((obj, host, member) => {
-                if (member.get_node_type() != Json.NodeType.ARRAY) {
-                    error("Targets must supply their ruleset IDs as arrays of integers.");
-                }
-                var id_list = new Gee.ArrayList<uint>();
-                member.get_array().foreach_element((arr,index,element) => {
-                    if (element.get_node_type() != Json.NodeType.VALUE)
-                        error ("RulesetIDs must be supplied as integer values");
-                    id_list.add((uint)element.get_int());
-                });
-                targets.set(new Target(host), id_list);
-            });
-        }
-
-        /**
          * Loads a ruleset from the database and stores it in the ram cache
          */
-        private void load_ruleset(uint ruleset_id) {
+        private void load_rulesets() {
             Json.Node root = parser.get_root();
-            if (root.get_node_type() != Json.NodeType.OBJECT) {
-                error("Need an object as the rootnode of rulesets.");
+
+            if (root.get_node_type() != Json.NodeType.ARRAY) {
+                warning("Could not parse rulesets: top node must be an array");
             }
-            var rootobj = root.get_object();
-
-            if (!rootobj.has_member("rulesetStrings")) {
-                error("The root object must have an array with the name 'rulesetStrings'.");
-            }
-
-            Json.Node arrnode = rootobj.get_member("rulesetStrings");
-            if (arrnode.get_node_type() != Json.NodeType.ARRAY) {
-                error("rulesetStrings must be supplied as array of string");
-            }
-
-            var arr = arrnode.get_array();
-            parse_ruleset(ruleset_id,arr.get_string_element(ruleset_id));
-        }
-
-        /**
-         * Causes a new {@link HTTPSEverywhere.Ruleset} to be created from the
-         * file at rulepath and to be stored in this libs memory
-         */
-        private void parse_ruleset(uint id, string ruledata) {
-            Xml.Doc* doc = Xml.Parser.parse_doc(ruledata);
-            if (doc == null) {
-                warning("Could not parse rule with id %u".printf(id));
-                return;
-            }
-
-            Xml.Node* root = doc->get_root_element();
-            if (root != null) {
+            Json.Array rulesets_arr = root.get_array();
+            uint id = 0;
+            rulesets_arr.foreach_element((_,i,e)=>{
                 try {
-                    // TODO: use Ruleset.from_json
-                    //var rs = new Ruleset.from_xml(root);
-                    var rs = new Ruleset();
-                    rulesets.set(id, rs);
+                    var rs = new Ruleset.from_json(e);
+                    rulesets.@set(++id, rs);
+                    foreach (Target target in rs.targets) {
+                        if (this.targets.has_key(target)) {
+                            this.targets.@get(target).add(id);
+                        } else {
+                            var id_list = new Gee.ArrayList<uint>();
+                            id_list.add(id);
+                            this.targets.@set(target, id_list);
+                        }
+                    }
                 } catch (RulesetError e) {
+                    warning("could not parse a ruleset");
                 }
-            } else {
-                warning("No Root element in rule with id %u".printf(id));
-            }
-
-            delete doc;
+            });
         }
     }
 }
