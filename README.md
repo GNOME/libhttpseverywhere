@@ -33,7 +33,6 @@ The following libraries have to be present for libhttpseverywhere to run:
   * glib-2.0
   * gee-0.8
   * json-glib-1.0
-  * libxml-2.0
   * libsoup-2.4
   * libarchive
 
@@ -51,7 +50,6 @@ are the following:
   * _gobject-introspection_ - GObject introspection compiler
   * _libgirepository1.0-dev_ - Dev headers for gobject introspection
   * _libjson-glib-dev_ - Dev headers for json-glib
-  * _libxml2-dev_ - Dev headers for libxml2
   * _libsoup2.4-dev_ - Dev headers for libsoup-2.4
   * _libarchive-dev_ - Dev headers for libarchive
 
