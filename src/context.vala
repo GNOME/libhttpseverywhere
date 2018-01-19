@@ -133,7 +133,7 @@ namespace HTTPSEverywhere {
                 string locations = "\n";
                 foreach (string location in datapaths)
                     locations += "%s\n".printf(location);
-                critical("Could not find any suitable database in the following locations:%s",
+                warning("Could not find any suitable database in the following locations:%s",
                          locations);
                 return;
             }
