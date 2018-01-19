@@ -41,6 +41,7 @@ gee = dependency('gee-0.8')
 archive = dependency('libarchive')
 
 subdir('src')
+subdir('test')
 
 pkgconfig.generate(libraries : httpseverywhere_lib,
                    version : libhttpseverywhere_version,

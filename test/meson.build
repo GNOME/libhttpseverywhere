@@ -26,4 +26,5 @@ httpseverywhere_test_source = [
 
 httpseverywhere_test = executable('httpseverywhere_test', httpseverywhere_test_source,
                                   dependencies: [glib, gobject, gio, gee, json_glib],
-                                  link_with: httpseverywhere_lib)
+                                  link_with: httpseverywhere_lib,
+                                  include_directories: include_directories('../src'))
