@@ -152,6 +152,7 @@ namespace HTTPSEverywhere {
                         throw (IOError) e;
                     if (e is UpdateError.NO_UPDATE_AVAILABLE)
                         throw (UpdateError) e;
+                    debug(e.message);
                     throw new UpdateError.CANT_REACH_SERVER("Couldn't request update from '%s'", UPDATE_URL);
                 }
             } catch (FileError e) {}
@@ -165,7 +166,8 @@ namespace HTTPSEverywhere {
             } catch (Error e) {
                 if (e is IOError.CANCELLED)
                     throw (IOError) e;
-                throw new UpdateError.CANT_REACH_SERVER("Could request update from '%s'", UPDATE_URL);
+                debug(e.message);
+                throw new UpdateError.CANT_REACH_SERVER("Couldn't request update from '%s'", UPDATE_URL);
             }
             // We expect the packed archive to be ~5 MiB big
             uint8[] output = new uint8[(5*1024*1024)];
