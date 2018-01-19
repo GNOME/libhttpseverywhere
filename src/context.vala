@@ -104,7 +104,12 @@ namespace HTTPSEverywhere {
                 datapaths.add(Path.build_filename(dp, "libhttpseverywhere", rulesets_file));
 
             // local rules in repo dir to test data without installation
-            datapaths.add(Path.build_filename(Environment.get_current_dir(), "..", "data", rulesets_file));
+            // only works if the test executable is loaded from the build/test folder
+            // that meson generates
+            if (Environment.get_current_dir().has_suffix("build/test")) {
+                datapaths.add(Path.build_filename(Environment.get_current_dir(),
+                                                  "..", "..", "data", rulesets_file));
+            }
 
             parser = new Json.Parser();
             bool success = false;
