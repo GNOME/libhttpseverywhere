@@ -117,6 +117,10 @@ namespace HTTPSEverywhere {
             foreach (string dp in datapaths) {
                 try {
                     File f = File.new_for_path(dp);
+                    FileInfo fi = f.query_info("standard::*", FileQueryInfoFlags.NONE);
+                    if (fi.get_size() == 0) {
+                        continue;
+                    }
                     FileInputStream fis = yield f.read_async(Priority.DEFAULT, cancellable);
                     DataInputStream dis = new DataInputStream(fis);
                     yield parser.load_from_stream_async(dis, cancellable);
