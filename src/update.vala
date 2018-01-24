@@ -44,6 +44,7 @@ namespace HTTPSEverywhere {
         CANT_REACH_SERVER,
         CANT_READ_HTTP_BODY,
         CANT_READ_FROM_ARCHIVE,
+        NO_RULESET_FILE,
         WRITE_FAILED
     }
 
@@ -58,6 +59,7 @@ namespace HTTPSEverywhere {
         private static string UPDATE_DIR = Path.build_filename(Environment.get_user_data_dir(),
                                                                "libhttpseverywhere");
         private const string UPDATE_URL = "https://www.eff.org/files/https-everywhere-latest.xpi";
+        private const string RULESET_PATH = "rules/default.rulesets";
         private const string LOCK_NAME = "lock";
         private const string ETAG_NAME = "etag";
 
@@ -190,8 +192,10 @@ namespace HTTPSEverywhere {
 
             string json = "";
             unowned Archive.Entry e = null;
+            bool found_ruleset_file = false;
             while (zipreader.next_header(out e) == Archive.Result.OK) {
-                if (e != null && e.pathname() == "webextension/rules/default.rulesets") {
+                if (e != null && e.pathname() == Updater.RULESET_PATH) {
+                    found_ruleset_file = true;
                     uint8[] jsonblock = new uint8[1024*1024];
                     while (true) {
                         var r = zipreader.read_data(jsonblock, 1024*1024);
@@ -210,6 +214,10 @@ namespace HTTPSEverywhere {
                 } else
                     zipreader.read_data_skip();
             }
+
+            // Throw an Exception when the expected ruleset file could not be found
+            if (!found_ruleset_file)
+                throw new UpdateError.NO_RULESET_FILE("Could not find expected ruleset file in the downloaded archive: %s", Updater.RULESET_PATH);
 
             // Copying the new Rules-File to the target
             update_state = UpdateState.COPYING_RULES;
