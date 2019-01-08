@@ -28,6 +28,7 @@ namespace HTTPSEverywhereTest {
             Test.init(ref args);
             ContextTest.add_tests();
             RulesetTest.add_tests();
+            UpdaterTest.add_tests();
             Test.run();
             return 0;
         }
@@ -158,6 +159,34 @@ namespace HTTPSEverywhereTest {
                         context.unignore_host("forums.lemonde.fr");
                         result = context.rewrite("http://forums.lemonde.fr");
                         assert(result.has_prefix("https://"));
+                        m.quit();
+                    } catch (Error e) {
+                        GLib.assert_not_reached();
+                    }
+                });
+                m.run();
+            });
+        }
+    }
+
+    class UpdaterTest {
+        public static void add_tests () {
+            Test.add_func("/httpseverywhere/updater/update", () => {
+                var context = new Context();
+                context.init.begin(null, (obj, res) => {
+                    try {
+                        context.init.end(res);
+                    } catch (Error e) {
+                        GLib.assert_not_reached();
+                    }
+                });
+                var updater = new Updater(context);
+                var m = new MainLoop();
+                updater.update.begin(null, (obj, res) => {
+                    try {
+                        updater.update.end(res);
+                        m.quit();
+                    } catch (UpdateError.NO_UPDATE_AVAILABLE e) {
                         m.quit();
                     } catch (Error e) {
                         GLib.assert_not_reached();
