@@ -188,7 +188,12 @@ namespace HTTPSEverywhere {
 
             Archive.Read zipreader = new Archive.Read();
             zipreader.set_format(Archive.Format.ZIP);
+#if VALA_0_42
+            output.length = (int) size_read;
+            zipreader.open_memory(output);
+#else
             zipreader.open_memory(output, size_read);
+#endif
 
             string json = "";
             unowned Archive.Entry e = null;
@@ -198,11 +203,15 @@ namespace HTTPSEverywhere {
                     found_ruleset_file = true;
                     uint8[] jsonblock = new uint8[1024*1024];
                     while (true) {
-                        var r = zipreader.read_data(jsonblock, 1024*1024);
+#if VALA_0_42
+                        var r = zipreader.read_data(jsonblock);
+#else
+                        var r = zipreader.read_data(jsonblock, jsonblock.length);
+#endif
                         if (r < 0) {
                             throw new UpdateError.CANT_READ_FROM_ARCHIVE("Failed reading archive stream");
                         }
-                        if (r < 1024*1024 && r != 0) {
+                        if (r < jsonblock.length && r != 0) {
                             uint8[] remainder = new uint8[r];
                             Memory.copy(remainder, jsonblock, r);
                             json += (string)remainder;
